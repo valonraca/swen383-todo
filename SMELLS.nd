@@ -1,0 +1,41 @@
+## 1. God Object
+Todo manager class
+
+## Explanation
+// problem - The Todo manager class is responsible for many different parts of the application including storing tasks, loading and saving tasks using localStorage, adding and deleting tasks, marking tasks as complete, and rendering the user interface.
+// potential solution - Since one class is responsible for so many different jobs, it becomes harder to maintain and modify. The responsibilities could be seperated into different classes or modules.
+
+## 2. Long Method
+render () of the Todo manager class
+
+## Explanation
+This method does many different things instead of focusing on one responsibility. It creates the pending and completed task lists, finds the oldest pending task. Generates the HTML, adds event listeners to the buttons, handles the animation for a newly added task, and updates the broswer title.
+Because it handles so many tasks, this method could be broken into several smaller methods that each handle one specific responsibility.
+
+## 3. Long Parameter List
+buildTaskRow() function
+
+## Explanation
+The function requires six different parameters: id, desc, completed, priority, createdAT, and showActions. Having this many parameters makes the function harder to read and increases the chance of passing the wrong value in the wrong position.
+A better aproach could be to pass the entire task object instead of passing each individual piece of task information separately. 
+
+## 4. Duplicated Code
+renderPendingRows() and renderCompletedRows() methods.
+
+## Explanation
+Both methods create an empty HTML string, loop through this.tasks , call buildTaskRow() , and return the resulting HTML. The main difference is that one looks for incomplete tasks while the other looks for completed tasks.
+Since most of the code is repeated, it could be combined into one method that takes the competion status as a parameter.
+
+## 5. Feature Envy
+summarizeWorkLoad() function
+
+## Explanation
+This function is outside of the ToDoManager class but relies heavily on the manager's tasks data. It loops through manager.tasks and examines properties such as completed and priority to calculate the workload summary. This suggest that the behaviour may belong closer to the object that owns the task data.
+Moving this responsibility into ToDoManager or another class specifically for task statistics could make the design cleaner.
+
+## 6. Magic Numbers
+3,20,40, and 1500
+
+## Explanation
+this appears several times throughout the code. For example the numbers 3,20,40, and 1500 are used without clearly explaining what they represent. The 3 represents the minimum number of characters allowed for a task, 20 represents the point at which the tasks are considered long, 40 controls how many characters of a task description are displayed, and 1500 represents 1.5 seconds for the flash animation.
+These would be easier to understand if they were replaced with named constants such as MIN_DESCRIPTION_LENGTH , MAX_TASKS , MAX_DISPLAY_LENGTH , and FLASH_DURATION_MS.
