@@ -8,4 +8,4 @@ Duplicated Code (renderPendingRows & renderCompletedRows): The exact same loop w
 
 Feature Envy (summarizeWorkload): ChatGPT found this one :The standalone function summarizeWorkload(manager) is a textbook case of feature envy. It takes a manager object as an argument and spends its entire life reaching into manager.tasks, looping through internal task properties (completed, priority), and calculating stats. Because it cares way more about TodoManager's internal data than its own space, it really ought to be a method living directly inside the TodoManager class.
 
-Magic Numbers (1500): It has no specific reason why this number exactly
+Magic Numbers (1500): It has no specific reason why this number exactly.
