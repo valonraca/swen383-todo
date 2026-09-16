@@ -1,0 +1,14 @@
+@startuml AddTask
+actor User
+participant TodoList
+participant Storage
+
+User -> TodoList : add("Buy milk")
+activate TodoList
+TodoList -> Storage : save(items)
+activate Storage
+Storage --> TodoList : ok
+deactivate Storage
+TodoList --> User : re-render
+deactivate TodoList
+@enduml
