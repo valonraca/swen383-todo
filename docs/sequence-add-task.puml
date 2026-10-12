@@ -1,0 +1,45 @@
+@startuml SequenceAddTask
+title Week 4 - Add a task
+actor User
+participant "Input / Add Task button" as UI
+participant "main.js" as Main
+participant TodoController as Controller
+participant TodoService as Service
+participant LocalStorageHandler as Storage
+participant "Browser localStorage" as BrowserStorage
+participant TodoRenderer as Renderer
+participant "Task container / document" as Page
+
+User -> UI : Enter description and click Add Task
+UI -> Main : click handler
+Main -> Controller : addTask(input.value, 'simple')
+Controller -> Service : addTask(description, type)
+Service -> Service : Trim and validate description
+
+alt Description has fewer than 3 characters
+  Service -> User : alert validation message
+  Service --> Controller : null
+  Controller --> Main : null
+  note over Main, Page : Input and rendered lists remain unchanged
+else Valid description
+  Service -> Service : Create task and append to tasks
+  note right of Service
+    Warn if the existing list has at least 20 tasks.
+    For Add Urgent, type is 'urgent':
+    set high priority and prefix the description.
+  end note
+  Service -> Storage : save(tasks)
+  Storage -> BrowserStorage : setItem('todo-tasks', JSON.stringify(tasks))
+  Service --> Controller : task.id
+  Controller -> Renderer : render(service, task.id)
+  Renderer -> Service : getWorkloadSummary()
+  Service --> Renderer : workload text
+  Renderer -> Renderer : Read service.tasks and build both lists
+  Renderer -> Page : Update lists, status, and page title
+  Renderer -> Page : Bind actions and flash the new row
+  Controller --> Main : task.id
+  Main -> UI : Clear input
+end
+
+note over UI, Main : Enter triggers Add Task; Add Urgent uses the same flow with type 'urgent'.
+@enduml

@@ -1,0 +1,62 @@
+@startuml ClassDiagram
+title Week 4 Todo App
+allowmixing
+skinparam classAttributeIconSize 0
+
+class TodoService {
+  + tasks: Object[]
+  + storageHandler: LocalStorageHandler
+  + TodoService(storageHandler)
+  + addTask(description, type): Number or null
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary(): String
+}
+
+class LocalStorageHandler {
+  + load(): Object[]
+  + save(tasks)
+}
+
+class TodoRenderer {
+  + container: HTMLElement
+  + actions: Object
+  + TodoRenderer(containerId)
+  + bindActions(actions)
+  + renderPendingRows(service): String
+  + renderCompletedRows(service): String
+  + buildTaskRow(task): String
+  + render(service, justAddedId)
+}
+
+class TodoController {
+  + todoService: TodoService
+  + todoRenderer: TodoRenderer
+  + TodoController(todoService, todoRenderer)
+  + start()
+  + addTask(description, type): Number or null
+  + toggleTask(id)
+  + deleteTask(id)
+}
+
+artifact "main.js" as Main
+Main ..> LocalStorageHandler : creates
+Main ..> TodoService : creates and injects storage
+Main ..> TodoRenderer : creates
+Main ..> TodoController : creates and delegates input
+TodoService --> LocalStorageHandler : injected persistence
+TodoController --> TodoService : delegates task operations
+TodoController --> TodoRenderer : binds actions and renders
+TodoRenderer ..> TodoService : reads tasks and workload summary
+
+note right of TodoService
+  Each task is a plain JavaScript object:
+  id, desc, completed, priority, createdAt.
+  TodoService creates and owns these objects.
+end note
+
+note bottom of TodoRenderer
+  Done and Delete invoke callbacks
+  bound by TodoController.
+end note
+@enduml
