@@ -16,7 +16,35 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 
 - `index.html` - page structure
 - `style.css` - styling
-- `src/todo.js` - application logic
+- `src/main.js` - creates and connects the objects; binds Add and Enter events
+- `src/LocalStorageHandler.js` - loads and saves tasks
+- `src/TodoService.js` - task data, rules and workload summary
+- `src/TodoRenderer.js` - markup and list interactions
+- `src/TodoController.js` - coordinates adding tasks and rendering
+- `docs/` - Week 4 UML and [refactoring notes](docs/w3-w4-refactoring.md)
+- `tests/` - behavior and DOM integration tests
+
+## Week 3 and Week 4
+
+Week 3 separates storage, rules and rendering (SRP) and injects the storage
+dependency (DIP). Week 4 introduces an Add controller (GRASP Controller) and moves
+the workload summary to the service (Information Expert). The urgent-task branch
+is intentionally retained for Week 6.
+
+The page now loads `src/main.js` as an ES module. Use Live Server or another HTTP
+server; opening `index.html` directly as a local file will not load the modules.
+
+## Tests
+
+With Node.js 22.13+ (22.x) or Node.js 24+:
+
+```sh
+npm ci
+npm test
+```
+
+jsdom is used only for tests. The browser application still uses plain JavaScript
+and needs no installation or build step to run through Live Server.
 
 ## License
 

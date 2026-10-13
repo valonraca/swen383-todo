@@ -1,0 +1,35 @@
+@startuml
+title Week 4 - Add Task / Add Urgent / Enter
+actor Student
+participant "main.js\ninput events" as Main
+participant TodoController as Controller
+participant TodoService as Service
+participant LocalStorageHandler as Storage
+database "Browser localStorage" as Local
+participant TodoRenderer as Renderer
+
+Student -> Main : click Add Task / Add Urgent\nor press Enter (simple)
+Main -> Controller : addTask(input.value, type)
+Controller -> Service : addTask(description, type)
+Service -> Service : trim and validate description
+alt fewer than 3 characters
+  Service -> Student : alert validation message
+  Service --> Controller : null
+  Controller --> Main : null
+  note over Main, Renderer : Input stays unchanged; no render or save.
+else valid description
+  Service -> Service : build task; apply urgent branch; push
+  Service -> Storage : save(tasks)
+  Storage -> Local : setItem('todo-tasks', JSON.stringify(tasks))
+  Local --> Storage
+  Storage --> Service
+  Service --> Controller : newId
+  Controller -> Renderer : render(Service, newId)
+  Renderer -> Service : getWorkloadSummary()
+  Service --> Renderer : counts as text
+  Renderer -> Renderer : render pending/completed lists;\nattach actions; flash new row; update title
+  Renderer --> Controller
+  Controller --> Main : newId
+  Main -> Main : clear input.value
+end
+@enduml
