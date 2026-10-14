@@ -1,0 +1,25 @@
+@startuml AddTask
+
+actor User
+participant TodoManager
+participant localStorage
+participant UI
+
+User -> TodoManager : addTask(description, type)
+activate TodoManager
+
+TodoManager -> TodoManager : trim description
+TodoManager -> TodoManager : create task object
+TodoManager -> TodoManager : add task to tasks[]
+
+TodoManager -> TodoManager : saveTasks()
+TodoManager -> localStorage : setItem("todo-tasks", tasks)
+localStorage --> TodoManager : saved
+
+TodoManager -> TodoManager : render(task.id)
+TodoManager -> UI : redraw task lists
+UI --> User : new task displayed
+
+deactivate TodoManager
+
+@enduml
