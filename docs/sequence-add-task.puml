@@ -1,0 +1,20 @@
+@startuml AddUrgentTask
+actor User
+participant main
+participant TodoController
+participant TodoService
+participant TaskBuilder
+participant LocalStorageHandler
+participant TodoRenderer
+
+User -> main : click Add Urgent
+main -> TodoController : addUrgentTask(description)
+TodoController -> TodoService : addUrgentTask(description)
+TodoService -> TaskBuilder : setPriority("high").addLabel("URGENT").build()
+TaskBuilder --> TodoService : Task
+TodoService -> LocalStorageHandler : save(tasks)
+TodoService --> TodoController : new task id
+TodoController -> TodoRenderer : render(service, newId)
+TodoRenderer --> User : updated list
+
+@enduml
