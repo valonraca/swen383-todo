@@ -1,0 +1,22 @@
+@startuml ClassDiagram
+
+class TodoManager {
+    - tasks: Array
+    - container: HTMLElement
+
+    + TodoManager(containerId)
+    + loadTasks()
+    + saveTasks()
+    + addTask(description, type)
+    + toggleComplete(id)
+    + deleteTask(id)
+    + renderPendingRows()
+    + renderCompletedRows()
+    + render(justAddedId)
+}
+
+class localStorage <<Browser API>>
+
+TodoManager ..> localStorage : loads and saves tasks
+
+@enduml
