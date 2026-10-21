@@ -1,3 +1,5 @@
+import { IdeaBox } from './IdeaBox.js';
+import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
@@ -8,6 +10,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const renderer = new TodoRenderer('task-container');
   const controller = new TodoController(service, renderer);
   controller.start();
+
+  const suggestions = new IdeaBoxAdapter(new IdeaBox());
+  const suggestBtn = document.getElementById('suggest-btn');
+  suggestBtn.addEventListener('click', () => {
+    controller.addTask(suggestions.getSuggestion());
+  });
 
   const input = document.getElementById('task-input');
   const addBtn = document.getElementById('add-task-btn');
