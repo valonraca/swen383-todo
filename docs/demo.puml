@@ -1,0 +1,9 @@
+@startuml Demo
+class Customer
+class Order
+class ReportGenerator
+class PdfWriter
+
+Customer "1" -- "0..*" Order          : associates with
+ReportGenerator ..> PdfWriter            : depends on
+@enduml
