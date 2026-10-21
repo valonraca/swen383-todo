@@ -1,0 +1,46 @@
+@startuml OriginalTodoApp
+!pragma layout smetana
+ title Week 2 — actual upstream design before refactoring
+ class TodoManager {
+  +tasks: Task[]
+  +container: HTMLElement
+  +TodoManager(containerId)
+  +loadTasks()
+  +saveTasks()
+  +addTask(description, type): boolean
+  +toggleComplete(id)
+  +deleteTask(id)
+  +renderPendingRows(): String
+  +renderCompletedRows(): String
+  +render(justAddedId)
+ }
+ class "Task record (plain object)" as Task <<record>> {
+  +id: Number
+  +desc: String
+  +completed: boolean
+  +priority: String
+  +createdAt: String
+ }
+ class "localStorage" as Storage <<browser API>> {
+  +getItem(key)
+  +setItem(key, value)
+ }
+ class "DOM / document" as DOM <<browser API>>
+ class "Free functions" as Helpers <<module functions>> {
+  +buildTaskRow(id, desc, completed, priority, createdAt, showActions)
+  +summarizeWorkload(manager)
+ }
+ TodoManager "1" *-- "0..*" Task : owns task records
+ TodoManager --> DOM : retains container reference
+ TodoManager ..> Storage : reads / writes JSON
+ TodoManager ..> Helpers : builds rows / status
+ Helpers ..> TodoManager : reads tasks for summary
+ note bottom of Task
+  Task is not a JavaScript class. It has no methods.
+  TodoManager is the only class in the original code.
+ end note
+ note bottom of DOM
+  The DOM container exists independently of TodoManager;
+  its reference is an association, not composition.
+ end note
+@enduml

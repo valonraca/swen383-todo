@@ -1,0 +1,4 @@
+{
+  "plantuml.render": "Local",
+  "plantuml.jar": "${workspaceFolder}/.tools/plantuml.jar"
+}

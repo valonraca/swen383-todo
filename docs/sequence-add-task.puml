@@ -1,0 +1,39 @@
+@startuml OriginalAddTask
+ title Week 2 — Add a Task: original main success scenario
+ actor User
+ participant "DOM input / Add Task button" as UI
+ participant "DOMContentLoaded callback" as Handler
+ participant "app: TodoManager" as Manager
+ participant "localStorage" as Storage
+ participant "DOM / document" as DOM
+ User -> UI : type "Buy milk" and click Add Task
+ activate UI
+ UI -> Handler : click event
+ activate Handler
+ Handler -> Manager : addTask(input.value, "simple")
+ activate Manager
+ Manager -> Manager : trim / validate description (length >= 3)
+ Manager -> Manager : create task record; tasks.push(task)
+ Manager -> Manager : saveTasks()
+ Manager -> Storage : setItem("todo-tasks", JSON.stringify(tasks))
+ activate Storage
+ Storage --> Manager : undefined
+ deactivate Storage
+ Manager -> Manager : render(task.id)
+ Manager -> Manager : renderPendingRows() / renderCompletedRows()\nbuildTaskRow(...) / summarizeWorkload(this)
+ Manager -> DOM : set innerHTML; bind Done / Delete handlers\nflash new row; update document.title
+ activate DOM
+ DOM --> Manager : UI updated
+ deactivate DOM
+ Manager --> Handler : true
+ deactivate Manager
+ Handler -> UI : input.value = ""
+ Handler --> UI : handler completes
+ deactivate Handler
+ UI --> User : new pending task visible
+ deactivate UI
+ note over Manager, Storage
+  This models the original successful simple-task path.
+  Invalid descriptions and storage failures are separate scenarios.
+ end note
+@enduml
