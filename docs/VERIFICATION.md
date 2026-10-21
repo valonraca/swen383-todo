@@ -33,14 +33,15 @@ key, preserving compatibility with the starter's saved data.
 
 ## Structural checks
 
-- Five JavaScript files directly in `src/`; no `todo.js`.
+- Week 6: ten JavaScript files directly in `src/`; no `todo.js`.
 - `index.html` loads `src/main.js` as a module; imports use `./` and `.js`.
 - Service storage is injected; no direct browser-storage or DOM/rendering reference.
 - `main.js` delegates interactions to the controller.
 - Renderer never calls task-mutating service methods or holds a controller.
 - Controller delegates validation and task creation to the service.
 - Workload counting belongs to the service; the original free helper is removed.
-- Urgent-task construction remains deferred to Week 6.
+- All new tasks use TaskBuilder; normal and urgent methods share validation/store.
+- Factory Method selects persistence without changing the service at its checkpoint.
 - Both diagrams render as valid SVGs.
 
 ## Recheck
@@ -48,6 +49,10 @@ key, preserving compatibility with the starter's saved data.
 Open `index.html` with VS Code Live Server. Add normal and urgent tasks, press
 Enter, click Done/Undo/Delete, and reload. Preview `.puml` files with Alt+D.
 Original code and diagrams are preserved in the weekly Git tags.
+
+Run `node --test` from the repository root for the storage-factory, builder,
+validation, and controller tests. The browser suite also checked in-memory reload
+behavior and compatibility with local tasks saved by earlier versions.
 
 The automated harness and per-stage reports/screenshots live in the parent
 workspace's `coursework-tools/` directory. They are verification tools, not
