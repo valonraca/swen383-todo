@@ -1,4 +1,4 @@
-# SWEN-383 Weeks 1–5
+# SWEN-383 Weeks 1–6
 
 Repository: <https://github.com/ymorina/swen383-todo>.
 Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
@@ -13,6 +13,7 @@ Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
 | 3 | File SRP/OCP/DIP Issues before changes; record the responsibility split; separate classes in the original file; verify; inject storage and split modules; push feature branch | `coursework/week3`, `feat/solid-refactoring` |
 | 4 | Merge Week 3; file Controller/Creator/Information Expert Issues before changes; coordinate all actions through the controller; bind callbacks; verify Creator; move summary to service; push feature branch | `coursework/week4`, `feat/grasp-controller` |
 | 5 | Replay Week 3/4 from the Week 2 baseline; preserve original feature history; update diagrams; verify the five-file design; push review branch and merge into `main` | `coursework/week5`, `feat/w3-w4-refactor` |
+| 6 | Factory Method for local/in-memory storage; Builder for normal/urgent task recipes; ten source files; domain and browser tests; two design Issues; merge into `main` | `coursework/week6`, `feat/creational-patterns` |
 
 The intermediate Week 3 classes live together in `todo.js` until the design
 works. Storage construction then moves into `main.js`, which injects a handler
@@ -25,7 +26,7 @@ the controller delegates domain mutations and requests redraws.
 | Issue | Decision | Intended final state |
 | --- | --- | --- |
 | [#1: SRP](https://github.com/ymorina/swen383-todo/issues/1) | Separate domain, rendering, and persistence | Closed by the linked fix on `main` |
-| [#2: OCP](https://github.com/ymorina/swen383-todo/issues/2) | New task types still require changing task creation | **Open for Week 6** |
+| [#2: OCP](https://github.com/ymorina/swen383-todo/issues/2) | Replace the urgent-task conditional with Builder recipes | Resolved in Week 6 |
 | [#3: DIP](https://github.com/ymorina/swen383-todo/issues/3) | Inject the storage contract | Closed by the linked fix on `main` |
 | [#4: Controller](https://github.com/ymorina/swen383-todo/issues/4) | Coordinate Add, Done/Undo, and Delete | Closed by the linked fix on `main` |
 | [#5: Creator](https://github.com/ymorina/swen383-todo/issues/5) | Service owns the collection and constructs task records | Closed with a verification comment |
@@ -35,9 +36,9 @@ the controller delegates domain mutations and requests redraws.
 
 The `.puml` files on `main` describe the current code. Their adjacent SVG files
 are rendered previews. The original Week 2 versions remain in `coursework/week2`.
-Only `TodoManager` is a declared class in the original source; helpers and
-browser APIs are marked separately. The final storage contract is conceptual
-JavaScript structural typing, not a source interface declaration.
+Only `TodoManager` is a declared class in the original source. Week 6 adds actual
+storage base classes and factory subclasses plus Task/TaskBuilder. Helpers and
+browser APIs are marked separately. Previous diagrams remain in the weekly tags.
 
 ## Student-handled submissions
 
@@ -50,6 +51,6 @@ has a team; GitHub invitations are pending until teammates' usernames are suppli
 
 ## Deliberately deferred work
 
-Keep the urgent-task conditional for Week 6. The duplicated list loops,
-six-parameter row helper, and numeric literals also remain: these weeks change
-responsibility assignment, not those later refactorings.
+The urgent-task conditional was retained through Week 5 and removed in Week 6.
+The duplicated list loops, six-parameter row helper, and numeric literals remain
+outside the current labs. Prototype and Singleton are deliberately not introduced.

@@ -21,6 +21,9 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 - `src/LocalStorageHandler.js` - browser persistence through `load()` / `save(tasks)`
 - `src/TodoController.js` - coordinates Add, Done/Undo, and Delete
 - `src/main.js` - creates dependencies and wires input events
+- `src/StorageHandler.js` and `src/InMemoryStorageHandler.js` - shared storage base and temporary backend
+- `src/StorageFactory.js` - Factory Method creator and concrete factory subclasses
+- `src/Task.js` and `src/TaskBuilder.js` - task product and fluent construction
 - `SMELLS.md` - three findings from the original Week 1 source, with line citations
 - `docs/` - PlantUML diagrams, SVG previews, and completion/verification notes
 
@@ -30,17 +33,23 @@ This fork is [ymorina/swen383-todo](https://github.com/ymorina/swen383-todo).
 The original starter is [valonraca/swen383-todo](https://github.com/valonraca/swen383-todo).
 
 Git tags preserve each design stage: `coursework/starter`, `coursework/week1`,
-`coursework/week2`, `coursework/week3`, `coursework/week4`, and `coursework/week5`.
+`coursework/week2`, `coursework/week3`, `coursework/week4`, `coursework/week5`, and `coursework/week6`.
 The Week 2 tag contains the original-code diagrams; the diagrams on `main`
 describe the current implementation. Use `git show coursework/week2:docs/class-diagram.puml`
 to inspect the original diagram without changing the working tree.
 
 The feature branches are `feat/solid-refactoring`, `feat/grasp-controller`, and
-`feat/w3-w4-refactor`. See [docs/COURSEWORK.md](docs/COURSEWORK.md) for the weekly
+`feat/w3-w4-refactor`, and `feat/creational-patterns`. See [docs/COURSEWORK.md](docs/COURSEWORK.md) for the weekly
 deliverables and GitHub Issues, and [docs/VERIFICATION.md](docs/VERIFICATION.md)
 for the behavioral checks performed.
 
-The OCP Issue stays open for Week 6, as required by the lab sheets.
+Week 6 resolves the original OCP Issue through Builder-based task construction.
+The default `LocalStorageFactory` persists tasks; selecting `InMemoryStorageFactory`
+in `main.js` instead creates a temporary list that is cleared on reload.
+See [docs/PATTERNS.md](docs/PATTERNS.md) for pattern roles and design Issues.
+
+Run the dependency-free domain tests with `node --test` from this directory.
+
 The student handles the myCourses repository submission and team declaration;
 teammates can be added to GitHub when their usernames are available.
 

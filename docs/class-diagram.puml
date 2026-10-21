@@ -1,86 +1,125 @@
 @startuml ClassDiagram
 allowmixing
-title Weeks 4–5 — current Todo App
+title Week 6 — current Todo App
 skinparam classAttributeIconSize 0
 hide empty members
 
-class TodoService {
-  + storage: load/save contract
-  + tasks: Array<Object>
-  + TodoService(storage)
-  + addTask(description, type): number | null
-  + toggleComplete(id)
-  + deleteTask(id)
-  + getWorkloadSummary(): String
+package "UI coordination" {
+  class TodoController {
+    + todoService
+    + todoRenderer: TodoRenderer
+    + TodoController(todoService, todoRenderer)
+    + start()
+    + addTask(description)
+    + addUrgentTask(description)
+    + toggleTask(id)
+    + deleteTask(id)
+  }
+  class TodoRenderer {
+    + container: HTMLElement
+    + actions: Object
+    + TodoRenderer(containerId)
+    + bindActions(actions)
+    + renderPendingRows(service)
+    + renderCompletedRows(service)
+    + render(service, justAddedId)
+  }
 }
-class TodoRenderer {
-  + container: HTMLElement
-  + actions: Object
-  + TodoRenderer(containerId)
-  + bindActions(actions)
-  + renderPendingRows(service): String
-  + renderCompletedRows(service): String
-  + render(service, justAddedId)
+
+package "Builder and task domain" {
+  class TodoService {
+    + storage
+    + tasks: Array
+    + TodoService(storage)
+    + addTask(description)
+    + addUrgentTask(description)
+    + validate(description)
+    + store(task)
+    + toggleComplete(id)
+    + deleteTask(id)
+    + getWorkloadSummary()
+  }
+  class Task <<Product>> {
+    + id: number
+    + desc: String
+    + completed: boolean
+    + priority: String
+    + createdAt: String
+    + Task(builder)
+  }
+  class TaskBuilder <<Builder>> {
+    + desc: String
+    + priority: String
+    + TaskBuilder(desc)
+    + setPriority(priority): TaskBuilder
+    + addLabel(label): TaskBuilder
+    + build(): Task
+  }
 }
-class TodoController {
-  + todoService: TodoService
-  + todoRenderer: TodoRenderer
-  + TodoController(todoService, todoRenderer)
-  + start()
-  + addTask(description, type): number | null
-  + toggleTask(id)
-  + deleteTask(id)
+
+package "Factory Method storage" {
+  abstract class StorageHandler <<Product>> {
+    {abstract} + load()
+    {abstract} + save(tasks)
+  }
+  class LocalStorageHandler <<ConcreteProduct>> {
+    + load()
+    + save(tasks)
+  }
+  class InMemoryStorageHandler <<ConcreteProduct>> {
+    + tasks: Array
+    + load()
+    + save(tasks)
+  }
+  abstract class StorageFactory <<Creator>> {
+    + createService(): TodoService
+    {abstract} + createStorage(): StorageHandler
+  }
+  class LocalStorageFactory <<ConcreteCreator>> {
+    + createStorage(): LocalStorageHandler
+  }
+  class InMemoryStorageFactory <<ConcreteCreator>> {
+    + createStorage(): InMemoryStorageHandler
+  }
 }
-class LocalStorageHandler {
-  + load(): Array<Object>
-  + save(tasks)
-}
-interface "Storage contract" as Storage <<structural contract>> {
-  + load(): Array<Object>
-  + save(tasks)
-}
+
 rectangle "main.js" as Main <<composition root>>
-rectangle "Row markup helper\nbuildTaskRow(...)" as Rows <<free function>>
 rectangle "onToggle(id) / onDelete(id)" as Actions <<bound callbacks>>
+rectangle "buildTaskRow(...)" as Rows <<free function>>
 rectangle "Task container / document" as DOM <<browser API>>
 rectangle "localStorage" as BrowserStorage <<browser API>>
 
-Main ..> LocalStorageHandler : creates
-Main ..> TodoService : injects storage
-Main ..> TodoRenderer : provides container id
-Main ..> TodoController : injects service and renderer
-TodoController --> TodoService : holds injected reference
-TodoController --> TodoRenderer : holds injected reference
-TodoService --> Storage : holds injected storage
-LocalStorageHandler ..|> Storage : satisfies load/save shape
+LocalStorageHandler --|> StorageHandler
+InMemoryStorageHandler --|> StorageHandler
+LocalStorageFactory --|> StorageFactory
+InMemoryStorageFactory --|> StorageFactory
+StorageFactory ..> TodoService : createService() constructs
+StorageFactory ..> StorageHandler : createStorage() returns
+LocalStorageFactory ..> LocalStorageHandler : creates
+InMemoryStorageFactory ..> InMemoryStorageHandler : creates
 LocalStorageHandler ..> BrowserStorage : reads / writes todo-tasks
-TodoRenderer ..> TodoService : reads tasks and summary during render
-TodoRenderer --> DOM : keeps existing element reference
-TodoRenderer ..> Rows : builds row markup
+TodoService --> StorageHandler : injected load/save backend
+TodoService ..> TaskBuilder : normal / urgent recipes
+TaskBuilder ..> Task : build() creates
+TodoService --> "0..*" Task : stores task-shaped records
+Main ..> LocalStorageFactory : selects default creator
+Main ..> TodoRenderer : creates
+Main ..> TodoController : injects service and renderer
+TodoController --> TodoRenderer : holds injected reference
 TodoController ..> Actions : supplies bound functions
 TodoRenderer --> Actions : stores and invokes
-Actions ..> TodoController : delegate toggleTask / deleteTask
+Actions ..> TodoController : toggleTask / deleteTask
+TodoRenderer --> DOM : references existing elements
+TodoRenderer ..> Rows : builds markup
 
-note left of Storage
-  Conceptual JavaScript structural contract.
-  No interface declaration or inheritance
-  appears in the source. Any object with
-  load() and save(tasks) can be injected.
+note bottom of Task
+  New records are Task products. JSON reloads produce
+  plain records with the same persisted fields.
 end note
-note left of TodoService
-  Owns the array and creates plain task records:
-  id, desc, completed, priority, createdAt.
-  There is no Task class.
-  The urgent conditional remains for Week 6.
+note bottom of StorageHandler
+  Base methods throw until overridden.
+  TodoService only requires the load/save shape.
 end note
-note bottom of TodoRenderer
-  Calls supplied functions, not a controller reference.
-  The controller and renderer do not require each other
-  to be constructed first. Renderer never mutates service.
-end note
-note bottom of TodoController
-  Injected references are associations, not composition:
-  main.js constructs the dependencies independently.
-  Controller delegates domain rules and requests redraws.
-end note
+TodoController --> TodoService : injected service
+TodoRenderer ..> TodoService : reads tasks and summary
 @enduml

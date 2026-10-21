@@ -1,81 +1,69 @@
 @startuml AddTask
-title Weeks 4–5 — Add a normal task (main success scenario)
+title Week 6 — Add a normal task (main success scenario)
 actor User
-boundary "Browser input / Add button" as Input
-participant "add(type) in main.js" as Main
+boundary "Task input / Add button" as Input
+participant "Add click handler in main.js" as Main
 participant "controller: TodoController" as Controller
+
 participant "service: TodoService" as Service
+participant "builder: TaskBuilder" as Builder
+participant "task: Task" as Task
 participant "storage: LocalStorageHandler" as Storage
 participant "Browser localStorage" as BrowserStorage
 participant "renderer: TodoRenderer" as Renderer
-participant "Row markup helper" as Rows
 boundary "Task container / document" as DOM
 
 note over Controller, Renderer
-  Precondition: main.js has injected the dependencies;
-  stored tasks are loaded, callbacks are bound,
-  and controller.start() has rendered the page.
+  Factory has created and injected the service's storage.
+  Saved records are loaded and action callbacks are bound.
 end note
-
 User -> Input : type "Buy milk" and click Add Task
-Input -> Main : click handler calls add('simple')
+Input -> Main : click
 activate Main
-Main -> Controller : addTask(input.value, type)
+Main -> Controller : addTask(input.value)
 activate Controller
-Controller -> Service : addTask(description, type)
+Controller -> Service : addTask(description)
 activate Service
-Service -> Service : trim description; check length >= 3
-Service -> Service : create normal task record and append to tasks
+Service -> Service : validate(description)\ntrim, check length, preserve long-list warning
+Service -> Builder : new TaskBuilder(trimmed)
+Service -> Builder : build()
+activate Builder
+Builder -> Task : new Task(builder)
+activate Task
+Task --> Builder : task with existing persisted fields
+deactivate Task
+Builder --> Service : task
+deactivate Builder
+Service -> Service : store(task); tasks.push(task)
 Service -> Storage : save(tasks)
 activate Storage
 Storage -> BrowserStorage : setItem('todo-tasks', JSON.stringify(tasks))
 activate BrowserStorage
-BrowserStorage --> Storage : undefined (save completed)
+BrowserStorage --> Storage : undefined
 deactivate BrowserStorage
 Storage --> Service : undefined
 deactivate Storage
 Service --> Controller : task.id
 deactivate Service
-
-Controller -> Renderer : render(service, newId)
+Controller -> Renderer : render(service-compatible object, newId)
 activate Renderer
-Renderer -> Renderer : renderPendingRows(service)
-activate Renderer
-loop each pending task
-  Renderer -> Rows : buildTaskRow(task fields, true)
-  activate Rows
-  Rows --> Renderer : row HTML
-  deactivate Rows
-end
-deactivate Renderer
-Renderer -> Renderer : renderCompletedRows(service)
-activate Renderer
-loop each completed task
-  Renderer -> Rows : buildTaskRow(task fields, true)
-  activate Rows
-  Rows --> Renderer : row HTML
-  deactivate Rows
-end
-deactivate Renderer
-Renderer -> Renderer : find oldest pending description
+Renderer -> Renderer : build pending/completed rows\nfind oldest pending description
 Renderer -> Service : getWorkloadSummary()
 activate Service
-Service --> Renderer : done / urgent / normal summary
+Service --> Renderer : workload summary
 deactivate Service
-Renderer -> DOM : assign container.innerHTML\n(status, pending and completed lists)
-Renderer -> DOM : bind Done / Delete to supplied action callbacks
-Renderer -> DOM : flash new row; schedule removal; update title
+Renderer -> DOM : update lists, status and title\nbind action callbacks; flash new row
 Renderer --> Controller : undefined
 deactivate Renderer
 Controller --> Main : newId
 deactivate Controller
-Main -> Input : set input.value = ''
+Main -> Input : clear accepted description
 deactivate Main
-DOM --> User : new task is visible in To do
+DOM --> User : saved task visible in To do
 
-note over Storage, DOM
-  Success: the task is saved and displayed.
-  Rejected short input is a separate scenario:
-  service returns null, no save or redraw occurs.
+note over Service, DOM
+  Short descriptions return null with no save or redraw.
+  Urgent additions use addUrgentTask() and the builder's
+  high-priority / URGENT-label recipe, not a type string.
 end note
 @enduml
