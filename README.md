@@ -16,6 +16,7 @@ I open `index.html` with the VS Code Live Server extension. The JavaScript modul
 - `src/TodoRenderer.js` — DOM rendering
 - `src/LocalStorageHandler.js` — browser storage
 - `src/main.js` — startup and dependency wiring
+- `src/TodoController.js` — coordinates UI actions
 - `SMELLS.md` — my three findings from the original code
 - `docs/class-diagram.puml` — the original app's structure
 - `docs/sequence-add-task.puml` — the original successful Add a Task scenario
