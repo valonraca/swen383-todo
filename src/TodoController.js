@@ -9,8 +9,16 @@ export class TodoController {
     this.todoRenderer.render(this.todoService);
   }
 
-  addTask(description, type) {
-    const newId = this.todoService.addTask(description, type);
+  addTask(description) {
+    const newId = this.todoService.addTask(description);
+    if (newId) {
+      this.todoRenderer.render(this.todoService, newId);
+    }
+    return newId;
+  }
+
+  addUrgentTask(description) {
+    const newId = this.todoService.addUrgentTask(description);
     if (newId) {
       this.todoRenderer.render(this.todoService, newId);
     }

@@ -1,40 +1,48 @@
 // src/TodoService.js
 // Owns the tasks. Knows nothing about the page and nothing about localStorage.
+import { TaskBuilder } from './TaskBuilder.js';
+
 export class TodoService {
   constructor(storage) {
     this.storage = storage;
     this.tasks = this.storage.load();
   }
 
-  addTask(description, type) {
+  addTask(description) {
+    const trimmed = this.validate(description);
+    if (!trimmed) return null;
+    const task = new TaskBuilder(trimmed).build();
+    return this.store(task);
+  }
+
+  addUrgentTask(description) {
+    const trimmed = this.validate(description);
+    if (!trimmed) return null;
+    const task = new TaskBuilder(trimmed)
+      .setPriority('high')
+      .addLabel('URGENT')
+      .build();
+    return this.store(task);
+  }
+
+  validate(description) {
     const trimmed = description.trim();
     if (trimmed.length < 3) {
       alert('Task needs at least a few characters.');
       return null;
     }
-
     if (this.tasks.length >= 20) {
       console.warn('This list is getting long - consider clearing completed tasks.');
     }
+    return trimmed;
+  }
 
-    const task = {
-      id: Date.now(),
-      desc: trimmed,
-      completed: false,
-      priority: 'normal',
-      createdAt: new Date().toLocaleTimeString()
-    };
-
-    if (type === 'urgent') {
-      task.priority = 'high';
-      task.desc = `[URGENT] ${trimmed}`;
-    }
-
+  store(task) {
     this.tasks.push(task);
     this.storage.save(this.tasks);
     return task.id;
   }
-
+  
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
