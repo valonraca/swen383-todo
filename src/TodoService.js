@@ -1,3 +1,5 @@
+import { TaskBuilder } from './TaskBuilder.js';
+
 export class TodoService {
   constructor(storageHandler) {
     this.storageHandler = storageHandler;
@@ -8,27 +10,32 @@ export class TodoService {
     this.storageHandler.save(this.tasks);
   }
 
-  addTask(description, type) {
+  addTask(description) {
+    const trimmed = this.validate(description);
+    if (!trimmed) return null;
+    return this.store(new TaskBuilder(trimmed).build());
+  }
+
+  addUrgentTask(description) {
+    const trimmed = this.validate(description);
+    if (!trimmed) return null;
+    const task = new TaskBuilder(trimmed)
+      .setPriority('high')
+      .addLabel('URGENT')
+      .build();
+    return this.store(task);
+  }
+
+  validate(description) {
     const trimmed = description.trim();
     if (trimmed.length < 3) return null;
-
     if (this.tasks.length >= 20) {
       console.warn('This list is getting long - consider clearing completed tasks.');
     }
+    return trimmed;
+  }
 
-    const task = {
-      id: Date.now(),
-      desc: trimmed,
-      completed: false,
-      priority: 'normal',
-      createdAt: new Date().toLocaleTimeString()
-    };
-
-    if (type === 'urgent') {
-      task.priority = 'high';
-      task.desc = `[URGENT] ${trimmed}`;
-    }
-
+  store(task) {
     this.tasks.push(task);
     this.saveTasks();
     return task.id;
