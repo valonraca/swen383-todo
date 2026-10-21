@@ -1,0 +1,11 @@
+@startuml Demo
+' PREVIEW LINK: http://www.plantuml.com/plantuml/png/SoSmIImgA2n9LKWjBSfBpiv9B2vMSCfCJYp9pC_Z0SeivYhYpIn9vL9Gqb80Id9oIr9oYp98B5T8IarBBKeiBafDBidCJrP8BIdDp4ijX0We0S6f0000
+
+class Customer
+class Order
+class ReportGenerator
+class PdfWriter
+
+Customer "1" -- "0..*" Order          : associates with
+ReportGenerator ..> PdfWriter            : depends on
+@enduml

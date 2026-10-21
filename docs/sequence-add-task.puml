@@ -1,0 +1,22 @@
+@startuml AddTask
+' PREVIEW: http://www.plantuml.com/plantuml/png/LOyx3i8m34NtdC8N1W0B1G8WXIiDe2DGYH4b9QjY9X2e-Upx_lz-z_Ska168-J2u12o6w1A-yXz-G7a1-G00
+
+actor User
+participant TodoManager
+database localStorage
+
+User -> TodoManager : addTask("Buy milk", "simple")
+activate TodoManager
+
+TodoManager -> TodoManager : saveTasks()
+activate TodoManager
+TodoManager -> localStorage : setItem("todo-tasks", json)
+deactivate TodoManager
+
+TodoManager -> TodoManager : render()
+activate TodoManager
+TodoManager --> User : Update DOM (flash row)
+deactivate TodoManager
+
+deactivate TodoManager
+@enduml
