@@ -1,6 +1,6 @@
 @startuml ClassDiagram
 allowmixing
-title Week 6 — current Todo App
+title Week 7 — current Todo App
 skinparam classAttributeIconSize 0
 hide empty members
 
@@ -120,6 +120,41 @@ note bottom of StorageHandler
   Base methods throw until overridden.
   TodoService only requires the load/save shape.
 end note
-TodoController --> TodoService : injected service
-TodoRenderer ..> TodoService : reads tasks and summary
+
+package "Adapter suggestions" {
+  class IdeaBox <<Adaptee>> {
+    + pickRandomIdea(): Object
+  }
+  class IdeaBoxAdapter <<Adapter>> {
+    + ideaBox: IdeaBox
+    + IdeaBoxAdapter(ideaBox)
+    + getSuggestion(): String
+  }
+}
+class LoggingTodoServiceDecorator <<Decorator>> {
+  + todoService: TodoService
+  + LoggingTodoServiceDecorator(todoService)
+  + addTask(description)
+  + addUrgentTask(description)
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary()
+  + tasks: Array [getter]
+}
+Main ..> IdeaBox : creates unchanged adaptee
+Main ..> IdeaBoxAdapter : creates and uses getSuggestion()
+IdeaBoxAdapter --> IdeaBox : adapts pickRandomIdea()
+Main ..> LoggingTodoServiceDecorator : wraps factory-created service
+LoggingTodoServiceDecorator --> TodoService : delegates all six public members
+TodoController --> LoggingTodoServiceDecorator : injected service-compatible object
+TodoRenderer ..> LoggingTodoServiceDecorator : reads tasks and summary
+note right of IdeaBoxAdapter
+  Target method: getSuggestion() returns text.
+  Domain and controller know nothing about IdeaBox.
+end note
+note right of LoggingTodoServiceDecorator
+  Same service surface, through structural typing.
+  Add operations log first; other members delegate.
+  No service or renderer code changes for Week 7.
+end note
 @enduml

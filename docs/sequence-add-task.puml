@@ -1,10 +1,10 @@
 @startuml AddTask
-title Week 6 — Add a normal task (main success scenario)
+title Week 7 — Add a normal task (main success scenario)
 actor User
 boundary "Task input / Add button" as Input
 participant "Add click handler in main.js" as Main
 participant "controller: TodoController" as Controller
-
+participant "logging: LoggingTodoServiceDecorator" as Logging
 participant "service: TodoService" as Service
 participant "builder: TaskBuilder" as Builder
 participant "task: Task" as Task
@@ -22,7 +22,10 @@ Input -> Main : click
 activate Main
 Main -> Controller : addTask(input.value)
 activate Controller
-Controller -> Service : addTask(description)
+Controller -> Logging : addTask(description)
+activate Logging
+Logging -> Logging : console.log: LOG: addTask, description
+Logging -> Service : addTask(description)
 activate Service
 Service -> Service : validate(description)\ntrim, check length, preserve long-list warning
 Service -> Builder : new TaskBuilder(trimmed)
@@ -43,15 +46,21 @@ BrowserStorage --> Storage : undefined
 deactivate BrowserStorage
 Storage --> Service : undefined
 deactivate Storage
-Service --> Controller : task.id
+Service --> Logging : task.id
 deactivate Service
+Logging --> Controller : task.id
+deactivate Logging
 Controller -> Renderer : render(service-compatible object, newId)
 activate Renderer
 Renderer -> Renderer : build pending/completed rows\nfind oldest pending description
-Renderer -> Service : getWorkloadSummary()
+Renderer -> Logging : getWorkloadSummary()
+activate Logging
+Logging -> Service : getWorkloadSummary()
 activate Service
-Service --> Renderer : workload summary
+Service --> Logging : workload summary
 deactivate Service
+Logging --> Renderer : workload summary
+deactivate Logging
 Renderer -> DOM : update lists, status and title\nbind action callbacks; flash new row
 Renderer --> Controller : undefined
 deactivate Renderer

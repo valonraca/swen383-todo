@@ -1,4 +1,4 @@
-# SWEN-383 Weeks 1–6
+# SWEN-383 Weeks 1–7
 
 Repository: <https://github.com/ymorina/swen383-todo>.
 Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
@@ -14,6 +14,7 @@ Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
 | 4 | Merge Week 3; file Controller/Creator/Information Expert Issues before changes; coordinate all actions through the controller; bind callbacks; verify Creator; move summary to service; push feature branch | `coursework/week4`, `feat/grasp-controller` |
 | 5 | Replay Week 3/4 from the Week 2 baseline; preserve original feature history; update diagrams; verify the five-file design; push review branch and merge into `main` | `coursework/week5`, `feat/w3-w4-refactor` |
 | 6 | Factory Method for local/in-memory storage; Builder for normal/urgent task recipes; ten source files; domain and browser tests; two design Issues; merge into `main` | `coursework/week6`, `feat/creational-patterns` |
+| 7 | Adapter for unchanged IdeaBox; Get Suggestion; logging Decorator; unchanged service/controller/renderer; two design Issues; merge into `main` | `coursework/week7`, `feat/structural-patterns` |
 
 The intermediate Week 3 classes live together in `todo.js` until the design
 works. Storage construction then moves into `main.js`, which injects a handler
@@ -37,8 +38,14 @@ the controller delegates domain mutations and requests redraws.
 The `.puml` files on `main` describe the current code. Their adjacent SVG files
 are rendered previews. The original Week 2 versions remain in `coursework/week2`.
 Only `TodoManager` is a declared class in the original source. Week 6 adds actual
-storage base classes and factory subclasses plus Task/TaskBuilder. Helpers and
-browser APIs are marked separately. Previous diagrams remain in the weekly tags.
+storage base classes and factory subclasses plus Task/TaskBuilder. Week 7 adds
+IdeaBox, its Adapter, and a service logging Decorator. Helpers and browser APIs
+are marked separately. Previous diagrams remain in the weekly tags.
+
+The four design records for Weeks 6–7 are listed in [PATTERNS.md](PATTERNS.md).
+The fork's `main` and each completed weekly feature branch are pushed. A pull
+request to `valonraca/swen383-todo:main` presents the full accumulated commit
+history, including the earlier Weeks 1–5 work, for instructor review.
 
 ## Student-handled submissions
 
