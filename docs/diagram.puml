@@ -1,0 +1,16 @@
+@startuml ClassDiagram
+class TodoList {
+  - items: Task[]
+  + add(t: Task)
+  + remove(id)
+}
+
+class Task {
+  - title: String
+  - done: boolean
+  + complete()
+}
+
+TodoList *-- "0..*" Task : owns
+TodoList ..> Storage : uses
+@enduml
