@@ -1,0 +1,63 @@
+@startuml
+title Week 4 Todo App - responsibilities and dependencies
+skinparam classAttributeIconSize 0
+hide empty members
+
+class "main.js" as Main <<composition root>>
+class TodoController {
+  - todoService: TodoService
+  - todoRenderer: TodoRenderer
+  + start()
+  + addTask(description, type): number or null
+}
+class TodoService {
+  + tasks: Task[]
+  - storage: Storage
+  + addTask(description, type): number or null
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary(): string
+}
+class TodoRenderer {
+  - container: HTMLElement
+  + render(service, justAddedId)
+  + renderPendingRows(service): string
+  + renderCompletedRows(service): string
+}
+interface Storage <<structural contract>> {
+  + load(): Task[]
+  + save(tasks)
+}
+class LocalStorageHandler {
+  + load(): Task[]
+  + save(tasks)
+}
+class Task <<plain object>> {
+  id: number
+  desc: string
+  completed: boolean
+  priority: string
+  createdAt: string
+}
+
+Main ..> TodoService : creates
+Main ..> TodoRenderer : creates
+Main ..> LocalStorageHandler : creates and injects
+Main ..> TodoController : creates; forwards Add / Enter
+TodoController --> TodoService : delegates Add
+TodoController --> TodoRenderer : requests render
+TodoService --> Storage : constructor injection
+LocalStorageHandler ..|> Storage
+TodoService "1" *-- "0..*" Task : owns
+TodoRenderer ..> TodoService : reads data and summary;\nforwards Done / Undo / Delete
+
+note right of Storage
+  JavaScript duck-typed contract,
+  not a separate interface file.
+  Test storage can replace the adapter.
+end note
+note bottom of TodoRenderer
+  buildTaskRow is a module helper.
+  The renderer does not own the task array.
+end note
+@enduml
