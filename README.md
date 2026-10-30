@@ -16,7 +16,14 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 
 - `index.html` - page structure
 - `style.css` - styling
-- `src/todo.js` - application logic
+- `src/main.js` - application wiring and browser event handlers
+- `src/TodoController.js` - coordinates user actions between the service and renderer
+- `src/TodoService.js` - task behavior and business rules
+- `src/Task.js` and `src/TaskBuilder.js` - task construction
+- `src/TodoRenderer.js` - renders the task list
+- `src/StorageHandler.js` - storage backend contract
+- `src/LocalStorageHandler.js` and `src/InMemoryStorageHandler.js` - storage backends
+- `src/StorageFactory.js` - creates services with the selected storage backend
 
 ## License
 

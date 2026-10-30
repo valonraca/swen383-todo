@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../Downloads/CP - Lab 00"
+		},
+		{
+			"name": "swen383-todo",
+			"path": "."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "swen383-todo"
+	}
+}
