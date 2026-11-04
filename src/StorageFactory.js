@@ -3,18 +3,23 @@ import { MemoryStorageHandler } from './MemoryStorageHandler.js';
 import { TodoService } from './TodoService.js';
 
 export class StorageFactory {
-  constructor(kind = 'local') {
-    this.kind = kind;
-  }
-
   createStorage() {
-    if (this.kind === 'memory') {
-      return new MemoryStorageHandler();
-    }
-    return new LocalStorageHandler();
+    throw new Error('createStorage() must be implemented');
   }
 
   createService() {
     return new TodoService(this.createStorage());
+  }
+}
+
+export class LocalStorageFactory extends StorageFactory {
+  createStorage() {
+    return new LocalStorageHandler();
+  }
+}
+
+export class MemoryStorageFactory extends StorageFactory {
+  createStorage() {
+    return new MemoryStorageHandler();
   }
 }

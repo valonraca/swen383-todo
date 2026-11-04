@@ -1,5 +1,8 @@
-export class MemoryStorageHandler {
+import { StorageHandler } from './StorageHandler.js';
+
+export class MemoryStorageHandler extends StorageHandler {
   constructor() {
+    super();
     this.tasks = [];
   }
 
