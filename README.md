@@ -14,9 +14,12 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 
 ## Files
 
-- `index.html` - page structure
-- `style.css` - styling
-- `src/todo.js` - application logic
+- `index.html` and `style.css` - page structure and styling
+- `src/main.js` - application wiring
+- `src/TodoService.js`, `src/TodoRenderer.js`, and `src/TodoController.js` - task logic, rendering, and user actions
+- `src/StorageHandler.js`, `src/LocalStorageHandler.js`, `src/InMemoryStorageHandler.js`, `src/ArchiveStorageHandler.js`, `src/StorageGroup.js`, and `src/StorageFactory.js` - storage backends, composite, and factories
+- `src/Task.js` and `src/TaskBuilder.js` - task creation
+- `src/IdeaBox.js`, `src/IdeaBoxAdapter.js`, `src/LoggingTodoServiceDecorator.js`, and `src/ConfirmDeleteProxy.js` - suggestion adapter, logging decorator, and delete confirmation proxy
 
 ## License
 
