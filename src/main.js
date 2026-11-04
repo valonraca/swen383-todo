@@ -1,9 +1,9 @@
-import { TodoService } from './TodoService.js';
 import { TodoRenderer } from './TodoRenderer.js';
-import { LocalStorageHandler } from './LocalStorageHandler.js';
+import { LocalStorageFactory } from './StorageFactory.js';
 import { TodoController } from './TodoController.js';
 
-const service = new TodoService(new LocalStorageHandler());
+const factory = new LocalStorageFactory();
+const service = factory.createService();
 const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 controller.start();
