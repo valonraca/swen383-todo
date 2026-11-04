@@ -4,9 +4,12 @@ import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { TodoRenderer } from './TodoRenderer.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { TodoController } from './TodoController.js';
+import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 
 const factory = new ArchivingStorageFactory();
-const service = new LoggingTodoServiceDecorator(factory.createService());
+const service = new ConfirmDeleteProxy(
+  new LoggingTodoServiceDecorator(factory.createService())
+);
 const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 
