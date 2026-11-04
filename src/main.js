@@ -6,17 +6,18 @@ import { LocalStorageFactory } from './StorageFactory.js';
 import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
+import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 
-const factory    = new LocalStorageFactory();
-factory = new ArchivingStorageFactory();
-const service    = new LoggingTodoServiceDecorator (factory.createService());
-const renderer   = new TodoRenderer('task-container');
+const factory = new LocalStorageFactory();
+// factory = new ArchivingStorageFactory();
+const service = new ConfirmDeleteProxy(new LoggingTodoServiceDecorator(factory.createService())
+); const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 
 controller.start();
 
-const input        = document.getElementById('task-input');
-const addBtn       = document.getElementById('add-task-btn');
+const input = document.getElementById('task-input');
+const addBtn = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 const suggestions = new IdeaBoxAdapter(new IdeaBox());
 const suggestBtn = document.getElementById('suggest-btn');
