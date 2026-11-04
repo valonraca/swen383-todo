@@ -1,12 +1,12 @@
-import { LocalStorageFactory } from './StorageFactory.js';
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
 import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
+import { ArchivingStorageFactory } from './StorageFactory.js';
 
 window.addEventListener('DOMContentLoaded', () => {
-  const factory = new LocalStorageFactory();
+  const factory = new ArchivingStorageFactory();
   const todoService = new LoggingTodoServiceDecorator(factory.createService());
   const todoRenderer = new TodoRenderer('task-container');
   const todoController = new TodoController(todoService, todoRenderer);
