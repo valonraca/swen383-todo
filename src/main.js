@@ -4,9 +4,11 @@ import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
 import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
-import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
+import { LoggingTodoServiceDecorator } from './loggingTodoServiceDecorator.js';
+import { ArchivingStorageFactory } from './StorageFactory.js';
 
-const factory    = new LocalStorageFactory();
+
+const factory = new ArchivingStorageFactory();
 const service    = new LoggingTodoServiceDecorator(factory.createService());
 const renderer   = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
