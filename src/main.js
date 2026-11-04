@@ -1,13 +1,17 @@
 // src/main.js : creates the objects and connects them
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
-import { LocalStorageFactory } from './StorageFactory.js';
 import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
+import { ArchivingStorageFactory } from './StorageFactory.js';
+import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js'; 
 
-const factory    = new LocalStorageFactory();
-const service    = new LoggingTodoServiceDecorator(factory.createService());
+
+const factory = new ArchivingStorageFactory();
+const service = new ConfirmDeleteProxy(
+  new LoggingTodoServiceDecorator(factory.createService())
+);
 const renderer   = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 
@@ -32,6 +36,14 @@ input.addEventListener('keydown', (event) => {
     addBtn.click();
   }
 });
+
+
+
+
+// before
+// const factory = new LocalStorageFactory();
+// after
+
 
 // Adapter: IdeaBox gives an object, the adapter turns it into a plain string
 const suggestions = new IdeaBoxAdapter(new IdeaBox());
