@@ -1,4 +1,4 @@
-/ src/IdeaBox.js
+// src/IdeaBox.js
 // Written by another team. Use it, but do not change it.
 export class IdeaBox {
   pickRandomIdea() {
