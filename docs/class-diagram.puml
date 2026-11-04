@@ -1,0 +1,30 @@
+@startuml ClassDiagram
+' PREVIEW: http://www.plantuml.com/plantuml/png/SoSmIImgA2n9LKWjBSfBpiv9B2vMSCfCJYp9pC_Z0SeivYhYpIn9vL9Gqb80Id9oIr9oYp98B5T8IarBBKeiBafDBidCJrP8BIdDp4ijX0We0S6f0000
+
+class TodoManager {
+  - tasks: Object[]
+  - container: HTMLElement
+  + addTask(description, type)
+  + toggleComplete(id)
+  + deleteTask(id)
+  + render()
+  - saveTasks()
+  - loadTasks()
+}
+
+class Task {
+  - id: Number
+  - desc: String
+  - completed: boolean
+  - priority: String
+  - createdAt: String
+}
+
+class localStorage << (S,#FF7700) Storage >> {
+  + setItem()
+  + getItem()
+}
+
+TodoManager *-- "0..20" Task : owns
+TodoManager ..> localStorage : uses
+@enduml
