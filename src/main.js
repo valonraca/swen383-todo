@@ -1,3 +1,4 @@
+import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
@@ -17,7 +18,7 @@ import { LocalStorageFactory } from './StorageFactory.js';
 
 
 const factory = new ArchivingStorageFactory();
-const service = new LoggingTodoServiceDecorator(factory.createService());
+const service = new ConfirmDeleteProxy(new LoggingTodoServiceDecorator(factory.createService()));
 const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 
