@@ -9,6 +9,6 @@ several are the same type, so it should just take one `task` object instead.
 logic can be in the same function with an if else.
 
 ## 3. Feature Envy, src/todo.js
-**Where:** src/todo.js, line 143 (function summarizeWorkload)
+**Where:** src/todo.js, line 143 in the Week 1 version (workload summary helper)
 **Smell:** Feature Envy. It only reads `manager`'s data and never its own, so it should
-just be a method on TodoManager, like `manager.summarizeWorkload()`.
+belong to the class that owns the tasks. In the refactored app, `TodoService.getWorkloadSummary()` counts them and the renderer displays the result.

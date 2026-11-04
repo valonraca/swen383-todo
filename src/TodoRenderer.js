@@ -43,22 +43,6 @@ export class TodoRenderer {
       '<h2 class="section-title">Completed</h2>' +
       `<ul>${completedHtml || '<li>Nothing completed yet.</li>'}</ul>`;
 
-    const toggleButtons = this.container.querySelectorAll('[data-toggle]');
-    for (const btn of toggleButtons) {
-      btn.addEventListener('click', () => {
-        service.toggleComplete(Number(btn.dataset.toggle));
-        this.render(service);
-      });
-    }
-
-    const deleteButtons = this.container.querySelectorAll('[data-delete]');
-    for (const btn of deleteButtons) {
-      btn.addEventListener('click', () => {
-        service.deleteTask(Number(btn.dataset.delete));
-        this.render(service);
-      });
-    }
-
     if (justAddedId) {
       const row = this.container.querySelector(`[data-row="${justAddedId}"]`);
       if (row) {
