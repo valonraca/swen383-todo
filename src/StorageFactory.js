@@ -2,6 +2,8 @@
 import { TodoService } from './TodoService.js';
 import { LocalStorageHandler } from './LocalStorageHandler.js';
 import { InMemoryStorageHandler } from './InMemoryStorageHandler.js';
+import { StorageGroup } from './StorageGroup.js';
+import { ArchiveStorageHandler } from './ArchiveStorageHandler.js';
 
 export class StorageFactory {
   createService() {
@@ -17,4 +19,13 @@ export class LocalStorageFactory extends StorageFactory {
 
 export class InMemoryStorageFactory extends StorageFactory {
   createStorage() { return new InMemoryStorageHandler(); }
+}
+
+export class ArchivingStorageFactory extends StorageFactory {
+  createStorage() {
+    const group = new StorageGroup();
+    group.add(new LocalStorageHandler());
+    group.add(new ArchiveStorageHandler());
+    return group;
+  }
 }
