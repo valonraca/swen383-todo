@@ -1,0 +1,210 @@
+@startuml ClassDiagram
+allowmixing
+title Week 9 — current Todo App
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "UI coordination" {
+  class TodoController {
+    + todoService
+    + todoRenderer: TodoRenderer
+    + TodoController(todoService, todoRenderer)
+    + start()
+    + addTask(description)
+    + addUrgentTask(description)
+    + toggleTask(id)
+    + deleteTask(id)
+  }
+  class TodoRenderer {
+    + container: HTMLElement
+    + actions: Object
+    + TodoRenderer(containerId)
+    + bindActions(actions)
+    + renderPendingRows(service)
+    + renderCompletedRows(service)
+    + render(service, justAddedId)
+  }
+}
+
+package "Builder and task domain" {
+  class TodoService {
+    + storage
+    + tasks: Array
+    + TodoService(storage)
+    + addTask(description)
+    + addUrgentTask(description)
+    + validate(description)
+    + store(task)
+    + toggleComplete(id)
+    + deleteTask(id)
+    + getWorkloadSummary()
+  }
+  class Task <<Product>> {
+    + id: number
+    + desc: String
+    + completed: boolean
+    + priority: String
+    + createdAt: String
+    + Task(builder)
+  }
+  class TaskBuilder <<Builder>> {
+    + desc: String
+    + priority: String
+    + TaskBuilder(desc)
+    + setPriority(priority): TaskBuilder
+    + addLabel(label): TaskBuilder
+    + build(): Task
+  }
+}
+
+package "Factory Method storage" {
+  abstract class StorageHandler <<Product / Component>> {
+    {abstract} + load()
+    {abstract} + save(tasks)
+  }
+  class LocalStorageHandler <<ConcreteProduct / Leaf>> {
+    + load()
+    + save(tasks)
+  }
+  class InMemoryStorageHandler <<ConcreteProduct>> {
+    + tasks: Array
+    + load()
+    + save(tasks)
+  }
+  abstract class StorageFactory <<Creator>> {
+    + createService(): TodoService
+    {abstract} + createStorage(): StorageHandler
+  }
+  class LocalStorageFactory <<ConcreteCreator>> {
+    + createStorage(): LocalStorageHandler
+  }
+  class InMemoryStorageFactory <<ConcreteCreator>> {
+    + createStorage(): InMemoryStorageHandler
+  }
+}
+
+rectangle "main.js" as Main <<composition root>>
+rectangle "onToggle(id) / onDelete(id)" as Actions <<bound callbacks>>
+rectangle "buildTaskRow(...)" as Rows <<free function>>
+rectangle "Task container / document" as DOM <<browser API>>
+rectangle "localStorage" as BrowserStorage <<browser API>>
+
+LocalStorageHandler --|> StorageHandler
+InMemoryStorageHandler --|> StorageHandler
+LocalStorageFactory --|> StorageFactory
+InMemoryStorageFactory --|> StorageFactory
+StorageFactory ..> TodoService : createService() constructs
+StorageFactory ..> StorageHandler : createStorage() returns
+LocalStorageFactory ..> LocalStorageHandler : creates
+InMemoryStorageFactory ..> InMemoryStorageHandler : creates
+LocalStorageHandler ..> BrowserStorage : reads / writes todo-tasks
+TodoService --> StorageHandler : injected load/save backend
+TodoService ..> TaskBuilder : normal / urgent recipes
+TaskBuilder ..> Task : build() creates
+TodoService --> "0..*" Task : stores task-shaped records
+
+Main ..> TodoRenderer : creates
+Main ..> TodoController : injects service and renderer
+TodoController --> TodoRenderer : holds injected reference
+TodoController ..> Actions : supplies bound functions
+TodoRenderer --> Actions : stores and invokes
+Actions ..> TodoController : toggleTask / deleteTask
+TodoRenderer --> DOM : references existing elements
+TodoRenderer ..> Rows : builds markup
+
+note bottom of Task
+  New records are Task products. JSON reloads produce
+  plain records with the same persisted fields.
+end note
+note bottom of StorageHandler
+  Base methods throw until overridden.
+  TodoService only requires the load/save shape.
+end note
+
+package "Adapter suggestions" {
+  class IdeaBox <<Adaptee>> {
+    + pickRandomIdea(): Object
+  }
+  class IdeaBoxAdapter <<Adapter>> {
+    + ideaBox: IdeaBox
+    + IdeaBoxAdapter(ideaBox)
+    + getSuggestion(): String
+  }
+}
+class LoggingTodoServiceDecorator <<Decorator>> {
+  + todoService: TodoService
+  + LoggingTodoServiceDecorator(todoService)
+  + addTask(description)
+  + addUrgentTask(description)
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary()
+  + tasks: Array [getter]
+}
+Main ..> IdeaBox : creates unchanged adaptee
+Main ..> IdeaBoxAdapter : creates and uses getSuggestion()
+IdeaBoxAdapter --> IdeaBox : adapts pickRandomIdea()
+Main ..> LoggingTodoServiceDecorator : wraps factory-created service
+LoggingTodoServiceDecorator --> TodoService : delegates all six public members
+TodoController --> ConfirmDeleteProxy : injected service-compatible object
+TodoRenderer ..> ConfirmDeleteProxy : reads tasks and summary
+note right of IdeaBoxAdapter
+  Target method: getSuggestion() returns text.
+  Domain and controller know nothing about IdeaBox.
+end note
+note right of LoggingTodoServiceDecorator
+  Same service surface, through structural typing.
+  Add operations log first; other members delegate.
+  No service or renderer code changes.
+end note
+
+package "Composite archiving" {
+  class ArchiveStorageHandler <<Leaf>> {
+    + load()
+    + save(tasks)
+  }
+  class StorageGroup <<Composite>> {
+    + members: Array<StorageHandler>
+    + StorageGroup()
+    + add(handler)
+    + load()
+    + save(tasks)
+  }
+  class ArchivingStorageFactory <<ConcreteCreator>> {
+    + createStorage(): StorageGroup
+  }
+}
+class ConfirmDeleteProxy <<Protection Proxy>> {
+  + todoService: LoggingTodoServiceDecorator
+  + ConfirmDeleteProxy(todoService)
+  + deleteTask(id)
+  + addTask(description)
+  + addUrgentTask(description)
+  + toggleComplete(id)
+  + getWorkloadSummary()
+  + tasks: Array [getter]
+}
+rectangle "confirm(message): boolean" as Confirm <<browser API>>
+Main ..> ArchivingStorageFactory : selects default creator
+ArchiveStorageHandler --|> StorageHandler
+StorageGroup --|> StorageHandler
+StorageGroup --> "0..*" StorageHandler : members
+ArchivingStorageFactory --|> StorageFactory
+ArchivingStorageFactory ..> StorageGroup : creates
+ArchivingStorageFactory ..> LocalStorageHandler : adds as first member
+ArchivingStorageFactory ..> ArchiveStorageHandler : adds as second member
+ArchiveStorageHandler ..> BrowserStorage : appends unseen IDs to todo-archive
+Main ..> ConfirmDeleteProxy : wraps decorated service
+ConfirmDeleteProxy --> LoggingTodoServiceDecorator : forwards five members; guards delete
+ConfirmDeleteProxy ..> Confirm : asks before deletion
+note bottom of StorageGroup
+  load(): read first member (active task list).
+  save(tasks): forward to every member in order.
+  Archive keeps the first-saved record per ID.
+end note
+note right of ConfirmDeleteProxy
+  Cancel: never call the real delete operation.
+  OK: delegate through decorator to TodoService.
+  Domain, controller and renderer stay unchanged.
+end note
+@enduml

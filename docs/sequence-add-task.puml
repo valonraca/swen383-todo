@@ -1,0 +1,101 @@
+@startuml AddTask
+title Week 9 — Add a normal task (main success scenario)
+actor User
+boundary "Task input / Add button" as Input
+participant "Add click handler in main.js" as Main
+participant "controller: TodoController" as Controller
+participant "proxy: ConfirmDeleteProxy" as Proxy
+participant "logging: LoggingTodoServiceDecorator" as Logging
+participant "service: TodoService" as Service
+participant "builder: TaskBuilder" as Builder
+participant "task: Task" as Task
+participant "storage: StorageGroup" as Storage
+participant "list: LocalStorageHandler" as List
+participant "archive: ArchiveStorageHandler" as Archive
+participant "Browser localStorage" as BrowserStorage
+participant "renderer: TodoRenderer" as Renderer
+boundary "Task container / document" as DOM
+
+note over Controller, Renderer
+  Factory has created and injected the service's storage.
+  Saved records are loaded and action callbacks are bound.
+end note
+User -> Input : type "Buy milk" and click Add Task
+Input -> Main : click
+activate Main
+Main -> Controller : addTask(input.value)
+activate Controller
+Controller -> Proxy : addTask(description)
+activate Proxy
+Proxy -> Logging : addTask(description)
+activate Logging
+Logging -> Logging : console.log: LOG: addTask, description
+Logging -> Service : addTask(description)
+activate Service
+Service -> Service : validate(description)\ntrim, check length, preserve long-list warning
+Service -> Builder : new TaskBuilder(trimmed)
+Service -> Builder : build()
+activate Builder
+Builder -> Task : new Task(builder)
+activate Task
+Task --> Builder : task with existing persisted fields
+deactivate Task
+Builder --> Service : task
+deactivate Builder
+Service -> Service : store(task); tasks.push(task)
+Service -> Storage : save(tasks)
+activate Storage
+Storage -> List : save(tasks)
+activate List
+List -> BrowserStorage : setItem('todo-tasks', JSON.stringify(tasks))
+activate BrowserStorage
+BrowserStorage --> List : undefined
+deactivate BrowserStorage
+List --> Storage : undefined
+deactivate List
+Storage -> Archive : save(tasks)
+activate Archive
+Archive -> BrowserStorage : getItem('todo-archive')
+BrowserStorage --> Archive : saved archive or null
+Archive -> Archive : append only previously unseen task IDs
+Archive -> BrowserStorage : setItem('todo-archive', JSON.stringify(archive))
+Archive --> Storage : undefined
+deactivate Archive
+Storage --> Service : undefined
+deactivate Storage
+Service --> Logging : task.id
+deactivate Service
+Logging --> Proxy : task.id
+deactivate Logging
+Proxy --> Controller : task.id
+deactivate Proxy
+Controller -> Renderer : render(service-compatible object, newId)
+activate Renderer
+Renderer -> Renderer : build pending/completed rows\nfind oldest pending description
+Renderer -> Proxy : getWorkloadSummary()
+activate Proxy
+Proxy -> Logging : getWorkloadSummary()
+activate Logging
+Logging -> Service : getWorkloadSummary()
+activate Service
+Service --> Logging : workload summary
+deactivate Service
+Logging --> Proxy : workload summary
+deactivate Logging
+Proxy --> Renderer : workload summary
+deactivate Proxy
+Renderer -> DOM : update lists, status and title\nbind action callbacks; flash new row
+Renderer --> Controller : undefined
+deactivate Renderer
+Controller --> Main : newId
+deactivate Controller
+Main -> Input : clear accepted description
+deactivate Main
+DOM --> User : saved task visible in To do
+
+note over Service, DOM
+  Short descriptions return null with no save or redraw.
+  Urgent additions use addUrgentTask() and the builder's
+  high-priority / URGENT-label recipe, not a type string.
+end note
+@enduml
