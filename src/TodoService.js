@@ -4,6 +4,24 @@ export class TodoService {
     this.tasks = this.storage.load();
   }
 
+  getWorkloadSummary() {
+    let done = 0;
+    let urgent = 0;
+    let normal = 0;
+
+    for (const task of this.tasks) {
+      if (task.completed) {
+        done++;
+      } else if (task.priority === 'high') {
+        urgent++;
+      } else {
+        normal++;
+      }
+    }
+
+    return `${done}/${this.tasks.length} done - ${urgent} urgent, ${normal} normal remaining`;
+  }
+
   addTask(description, type) {
     const trimmed = description.trim();
     if (trimmed.length < 3) {
