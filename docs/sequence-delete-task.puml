@@ -1,0 +1,63 @@
+@startuml DeleteTask
+title Week 9 — Delete confirmation (OK and Cancel)
+actor User
+boundary "Delete button / bound onDelete callback" as UI
+participant "controller: TodoController" as Controller
+participant "proxy: ConfirmDeleteProxy" as Proxy
+boundary "Browser confirm dialog" as Confirm
+participant "logging: LoggingTodoServiceDecorator" as Logging
+participant "real: TodoService" as Service
+participant "storage: StorageGroup" as Group
+participant "list: LocalStorageHandler" as List
+participant "archive: ArchiveStorageHandler" as Archive
+participant "renderer: TodoRenderer" as Renderer
+
+User -> UI : click Delete
+UI -> Controller : deleteTask(id) via bound callback
+activate Controller
+Controller -> Proxy : deleteTask(id)
+activate Proxy
+Proxy -> Confirm : confirm("Delete this task?")
+Confirm -> User : display OK / Cancel
+User --> Confirm : choose
+Confirm --> Proxy : boolean choice
+alt user chooses OK
+  Proxy -> Logging : deleteTask(id)
+  activate Logging
+  Logging -> Service : deleteTask(id)
+  activate Service
+  Service -> Service : filter task from active array
+  Service -> Group : save(tasks)
+  activate Group
+  Group -> List : save(tasks)
+  List --> Group : todo-tasks replaced
+  Group -> Archive : save(tasks)
+  Archive --> Group : unseen IDs appended; existing records retained
+  Group --> Service : undefined
+  deactivate Group
+  Service --> Logging : undefined
+  deactivate Service
+  Logging --> Proxy : undefined
+  deactivate Logging
+else user chooses Cancel
+  note right of Proxy
+    No call reaches the decorated service.
+    Neither storage key is changed.
+  end note
+end
+Proxy --> Controller : undefined
+deactivate Proxy
+Controller -> Renderer : render(service-compatible object)
+activate Renderer
+Renderer --> Controller : current task list displayed
+deactivate Renderer
+Controller --> UI : undefined
+deactivate Controller
+
+note over Controller, Renderer
+  The existing controller requests rendering after either result.
+  On Cancel, it displays the same unchanged task list.
+  On OK, the removed task stays absent after reload,
+  and its first-saved record remains in todo-archive.
+end note
+@enduml

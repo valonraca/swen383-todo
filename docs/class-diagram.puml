@@ -1,6 +1,6 @@
 @startuml ClassDiagram
 allowmixing
-title Week 7 — current Todo App
+title Week 9 — current Todo App
 skinparam classAttributeIconSize 0
 hide empty members
 
@@ -58,11 +58,11 @@ package "Builder and task domain" {
 }
 
 package "Factory Method storage" {
-  abstract class StorageHandler <<Product>> {
+  abstract class StorageHandler <<Product / Component>> {
     {abstract} + load()
     {abstract} + save(tasks)
   }
-  class LocalStorageHandler <<ConcreteProduct>> {
+  class LocalStorageHandler <<ConcreteProduct / Leaf>> {
     + load()
     + save(tasks)
   }
@@ -102,7 +102,7 @@ TodoService --> StorageHandler : injected load/save backend
 TodoService ..> TaskBuilder : normal / urgent recipes
 TaskBuilder ..> Task : build() creates
 TodoService --> "0..*" Task : stores task-shaped records
-Main ..> LocalStorageFactory : selects default creator
+
 Main ..> TodoRenderer : creates
 Main ..> TodoController : injects service and renderer
 TodoController --> TodoRenderer : holds injected reference
@@ -146,8 +146,8 @@ Main ..> IdeaBoxAdapter : creates and uses getSuggestion()
 IdeaBoxAdapter --> IdeaBox : adapts pickRandomIdea()
 Main ..> LoggingTodoServiceDecorator : wraps factory-created service
 LoggingTodoServiceDecorator --> TodoService : delegates all six public members
-TodoController --> LoggingTodoServiceDecorator : injected service-compatible object
-TodoRenderer ..> LoggingTodoServiceDecorator : reads tasks and summary
+TodoController --> ConfirmDeleteProxy : injected service-compatible object
+TodoRenderer ..> ConfirmDeleteProxy : reads tasks and summary
 note right of IdeaBoxAdapter
   Target method: getSuggestion() returns text.
   Domain and controller know nothing about IdeaBox.
@@ -155,6 +155,56 @@ end note
 note right of LoggingTodoServiceDecorator
   Same service surface, through structural typing.
   Add operations log first; other members delegate.
-  No service or renderer code changes for Week 7.
+  No service or renderer code changes.
+end note
+
+package "Composite archiving" {
+  class ArchiveStorageHandler <<Leaf>> {
+    + load()
+    + save(tasks)
+  }
+  class StorageGroup <<Composite>> {
+    + members: Array<StorageHandler>
+    + StorageGroup()
+    + add(handler)
+    + load()
+    + save(tasks)
+  }
+  class ArchivingStorageFactory <<ConcreteCreator>> {
+    + createStorage(): StorageGroup
+  }
+}
+class ConfirmDeleteProxy <<Protection Proxy>> {
+  + todoService: LoggingTodoServiceDecorator
+  + ConfirmDeleteProxy(todoService)
+  + deleteTask(id)
+  + addTask(description)
+  + addUrgentTask(description)
+  + toggleComplete(id)
+  + getWorkloadSummary()
+  + tasks: Array [getter]
+}
+rectangle "confirm(message): boolean" as Confirm <<browser API>>
+Main ..> ArchivingStorageFactory : selects default creator
+ArchiveStorageHandler --|> StorageHandler
+StorageGroup --|> StorageHandler
+StorageGroup --> "0..*" StorageHandler : members
+ArchivingStorageFactory --|> StorageFactory
+ArchivingStorageFactory ..> StorageGroup : creates
+ArchivingStorageFactory ..> LocalStorageHandler : adds as first member
+ArchivingStorageFactory ..> ArchiveStorageHandler : adds as second member
+ArchiveStorageHandler ..> BrowserStorage : appends unseen IDs to todo-archive
+Main ..> ConfirmDeleteProxy : wraps decorated service
+ConfirmDeleteProxy --> LoggingTodoServiceDecorator : forwards five members; guards delete
+ConfirmDeleteProxy ..> Confirm : asks before deletion
+note bottom of StorageGroup
+  load(): read first member (active task list).
+  save(tasks): forward to every member in order.
+  Archive keeps the first-saved record per ID.
+end note
+note right of ConfirmDeleteProxy
+  Cancel: never call the real delete operation.
+  OK: delegate through decorator to TodoService.
+  Domain, controller and renderer stay unchanged.
 end note
 @enduml
