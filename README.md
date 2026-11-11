@@ -1,7 +1,8 @@
 # Todo App
 
-A small browser Todo list: add tasks, get suggestions, mark them complete, and delete them. Tasks are kept in the
-browser's local storage. Plain HTML, CSS and JavaScript, no build step.
+A small browser Todo list: add tasks, get suggestions, mark them complete, and
+confirm deletions. The active list and an archive are kept in browser storage.
+Plain HTML, CSS and JavaScript, no build step.
 
 This is the shared codebase for SWEN-383 (Software Design Principles and Patterns) at RIT Kosovo.
 Every student forks this repository in Week 1 and evolves it, week by week, as the course covers
@@ -26,6 +27,8 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 - `src/Task.js` and `src/TaskBuilder.js` - task product and fluent construction
 - `src/IdeaBox.js` and `src/IdeaBoxAdapter.js` - supplied idea source and string adapter
 - `src/LoggingTodoServiceDecorator.js` - logs additions and delegates the service surface
+- `src/ArchiveStorageHandler.js` and `src/StorageGroup.js` - archive leaf and Composite storage
+- `src/ConfirmDeleteProxy.js` - guards deletion behind an OK/Cancel confirmation
 - `SMELLS.md` - three findings from the original Week 1 source, with line citations
 - `docs/` - PlantUML diagrams, SVG previews, and completion/verification notes
 
@@ -36,24 +39,34 @@ The original starter is [valonraca/swen383-todo](https://github.com/valonraca/sw
 
 Git tags preserve each design stage: `coursework/starter`, `coursework/week1`,
 `coursework/week2`, `coursework/week3`, `coursework/week4`, `coursework/week5`,
-`coursework/week6`, and `coursework/week7`.
+`coursework/week6`, `coursework/week7`, and `coursework/week9`.
 The Week 2 tag contains the original-code diagrams; the diagrams on `main`
 describe the current implementation. Use `git show coursework/week2:docs/class-diagram.puml`
 to inspect the original diagram without changing the working tree.
 
-The feature branches are `feat/solid-refactoring`, `feat/grasp-controller`, and
-`feat/w3-w4-refactor`, `feat/creational-patterns`, and `feat/structural-patterns`.
+The feature branches are `feat/solid-refactoring`, `feat/grasp-controller`,
+`feat/w3-w4-refactor`, `feat/creational-patterns`, `feat/structural-patterns`,
+and `feat/composite-proxy`.
 See [docs/COURSEWORK.md](docs/COURSEWORK.md) for the weekly
 deliverables and GitHub Issues, and [docs/VERIFICATION.md](docs/VERIFICATION.md)
 for the behavioral checks performed.
 
 Week 6 resolves the original OCP Issue through Builder-based task construction.
-The default `LocalStorageFactory` persists tasks; selecting `InMemoryStorageFactory`
-in `main.js` instead creates a temporary list that is cleared on reload.
+The default `ArchivingStorageFactory` saves through a group containing the active
+list and archive handlers. `load()` reads only the active list, so archived
+deletions do not reappear. `LocalStorageFactory` remains available for list-only
+persistence; `InMemoryStorageFactory` creates a temporary list cleared on reload.
 See [docs/PATTERNS.md](docs/PATTERNS.md) for pattern roles and design Issues.
 Week 7's Get Suggestion button adds an adapted idea through the normal controller
 path. The logging decorator prints add attempts in the browser console; completion,
 deletion, and workload reads delegate to the wrapped service.
+Week 9 puts `ConfirmDeleteProxy` in front of that decorated service. Cancel keeps
+the task and makes no storage writes; OK removes it from the active list while
+retaining its archive record. Inspect the archive in the browser console with
+`JSON.parse(localStorage.getItem('todo-archive'))`. Each ID retains its first-saved
+record; the archive is not an edit-history log or a restore interface.
+
+Instructor review: [PR #46](https://github.com/valonraca/swen383-todo/pull/46).
 
 Run the dependency-free domain tests with `node --test` from this directory.
 

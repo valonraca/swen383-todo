@@ -1,4 +1,4 @@
-# SWEN-383 Weeks 1–7
+# SWEN-383 completed labs: Weeks 1–7 and 9
 
 Repository: <https://github.com/ymorina/swen383-todo>.
 Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
@@ -15,6 +15,7 @@ Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
 | 5 | Replay Week 3/4 from the Week 2 baseline; preserve original feature history; update diagrams; verify the five-file design; push review branch and merge into `main` | `coursework/week5`, `feat/w3-w4-refactor` |
 | 6 | Factory Method for local/in-memory storage; Builder for normal/urgent task recipes; ten source files; domain and browser tests; two design Issues; merge into `main` | `coursework/week6`, `feat/creational-patterns` |
 | 7 | Adapter for unchanged IdeaBox; Get Suggestion; logging Decorator; unchanged service/controller/renderer; two design Issues; merge into `main` | `coursework/week7`, `feat/structural-patterns` |
+| 9 | Composite saves active list and archive; Proxy confirms deletions; unchanged domain/controller/renderer and active-list handler; two design Issues; merge into `main` | `coursework/week9`, `feat/composite-proxy` |
 
 The intermediate Week 3 classes live together in `todo.js` until the design
 works. Storage construction then moves into `main.js`, which injects a handler
@@ -42,10 +43,15 @@ storage base classes and factory subclasses plus Task/TaskBuilder. Week 7 adds
 IdeaBox, its Adapter, and a service logging Decorator. Helpers and browser APIs
 are marked separately. Previous diagrams remain in the weekly tags.
 
-The four design records for Weeks 6–7 are listed in [PATTERNS.md](PATTERNS.md).
+The six design records for Weeks 6–7 and 9 are listed in [PATTERNS.md](PATTERNS.md).
 The fork's `main` and each completed weekly feature branch are pushed. A pull
-request to `valonraca/swen383-todo:main` presents the full accumulated commit
-history, including the earlier Weeks 1–5 work, for instructor review.
+request [#46](https://github.com/valonraca/swen383-todo/pull/46) to
+`valonraca/swen383-todo:main` presents the full accumulated commit history,
+including the earlier Weeks 1–5 work and the Week 9 additions, for instructor review.
+
+The Week 9 handout explicitly starts from the Week 7 design. No separate Week 8
+implementation was required or claimed. The completed app uses Factory Method,
+Builder, Adapter, Decorator, Composite, and Proxy.
 
 ## Student-handled submissions
 
