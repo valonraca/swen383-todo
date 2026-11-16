@@ -38,4 +38,9 @@ export class TodoController {
     this.todoService.deleteTask(id);
     this.todoRenderer.render(this.todoService);
   }
+
+  removeTask(id) {
+  this.todoService.deleteTask(id);
+  this.todoRenderer.render(this.todoService);
+}
 }
