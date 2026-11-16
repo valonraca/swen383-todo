@@ -1,4 +1,4 @@
-# SWEN-383 completed labs: Weeks 1–7 and 9
+# SWEN-383 completed labs: Weeks 1–7, 9, and 11
 
 Repository: <https://github.com/ymorina/swen383-todo>.
 Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
@@ -16,6 +16,7 @@ Verified course starter: <https://github.com/valonraca/swen383-todo>, commit
 | 6 | Factory Method for local/in-memory storage; Builder for normal/urgent task recipes; ten source files; domain and browser tests; two design Issues; merge into `main` | `coursework/week6`, `feat/creational-patterns` |
 | 7 | Adapter for unchanged IdeaBox; Get Suggestion; logging Decorator; unchanged service/controller/renderer; two design Issues; merge into `main` | `coursework/week7`, `feat/structural-patterns` |
 | 9 | Composite saves active list and archive; Proxy confirms deletions; unchanged domain/controller/renderer and active-list handler; two design Issues; merge into `main` | `coursework/week9`, `feat/composite-proxy` |
+| 11 | Observer counter; Command-based normal Add/Enter history and confirmed Undo; separate commits; automated tests; merge into `main` | `coursework/week11`, `feat/observer-command` |
 
 The intermediate Week 3 classes live together in `todo.js` until the design
 works. Storage construction then moves into `main.js`, which injects a handler
@@ -47,11 +48,16 @@ The six design records for Weeks 6–7 and 9 are listed in [PATTERNS.md](PATTERN
 The fork's `main` and each completed weekly feature branch are pushed. A pull
 request [#46](https://github.com/valonraca/swen383-todo/pull/46) to
 `valonraca/swen383-todo:main` presents the full accumulated commit history,
-including the earlier Weeks 1–5 work and the Week 9 additions, for instructor review.
+including the earlier Weeks 1–5 work and the Week 9/11 additions, for instructor review.
 
 The Week 9 handout explicitly starts from the Week 7 design. No separate Week 8
 implementation was required or claimed. The completed app uses Factory Method,
 Builder, Adapter, Decorator, Composite, and Proxy.
+
+Week 11 explicitly starts from Week 9 and adds Observer and Command. The counter
+subscribes directly to the raw service; normal Add and Enter are the only
+actions recorded in CommandHistory. No separate Week 10 implementation was
+required or claimed. The Week 11 handout does not require new GitHub Issues.
 
 ## Student-handled submissions
 
