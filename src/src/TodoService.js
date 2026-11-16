@@ -4,9 +4,20 @@ export class TodoService {
   constructor(storage) {
     this.storage = storage;
     this.tasks = this.storage.load();
+    this.observers = [];
   }
 
-addTask(description) {
+  subscribe(observer) {
+    this.observers.push(observer);
+  }
+
+  notify() {
+    for (const observer of this.observers) {
+      observer.update(this.tasks);
+    }
+  }
+
+  addTask(description) {
     const trimmed = this.validate(description);
     if (!trimmed) return null;
     const task = new TaskBuilder(trimmed).build();
@@ -38,22 +49,25 @@ addTask(description) {
   store(task) {
     this.tasks.push(task);
     this.storage.save(this.tasks);
+    this.notify();
     return task.id;
   }
-  
+
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
     task.completed = !task.completed;
     this.storage.save(this.tasks);
+    this.notify()
   }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter(t => t.id !== id);
     this.storage.save(this.tasks);
+    this.notify()
   }
-}
-getWorkloadSummary() {
+
+  getWorkloadSummary() {
     let done = 0;
     let urgent = 0;
     let normal = 0;
@@ -70,3 +84,4 @@ getWorkloadSummary() {
 
     return `${done}/${this.tasks.length} done - ${urgent} urgent, ${normal} normal remaining`;
   }
+}
