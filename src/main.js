@@ -1,3 +1,4 @@
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 import { TaskCounter } from './TaskObservers.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
@@ -29,7 +30,14 @@ const controller = new TodoController(service, renderer);
 controller.start();
 
 const input = document.getElementById('task-input');
-const addBtn = document.getElementById('add-task-btn');
+const history = new CommandHistory();
+addBtn.addEventListener('click', () => {
+  history.run(new AddTaskCommand(controller, input.value));
+  input.value = '';
+});
+document.getElementById('undo-btn').addEventListener('click', () => {
+  history.undo();
+});
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 
 const counter = new TaskCounter();
