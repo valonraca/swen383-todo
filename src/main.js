@@ -5,8 +5,9 @@ import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
-import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js'; 
+import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TaskCounter } from './TaskObservers.js';
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 
 const factory = new ArchivingStorageFactory();
 const todoService = factory.createService();
@@ -22,11 +23,16 @@ const input        = document.getElementById('task-input');
 const addBtn       = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 
+// Command (step 3d): Add goes through the history so it can be undone
+const history = new CommandHistory();
 addBtn.addEventListener('click', () => {
-  if (controller.addTask(input.value)) {
-    input.value = '';
-  }
+  history.run(new AddTaskCommand(controller, input.value));
+  input.value = '';
 });
+document.getElementById('undo-btn').addEventListener('click', () => {
+  history.undo();
+});
+
 addUrgentBtn.addEventListener('click', () => {
   if (controller.addUrgentTask(input.value)) {
     input.value = '';
@@ -38,22 +44,15 @@ input.addEventListener('keydown', (event) => {
   }
 });
 
-
-
-
-// before
-// const factory = new LocalStorageFactory();
-// after
-
-
 // Adapter: IdeaBox gives an object, the adapter turns it into a plain string
 const suggestions = new IdeaBoxAdapter(new IdeaBox());
 const suggestBtn  = document.getElementById('suggest-btn');
 
 suggestBtn.addEventListener('click', () => {
   controller.addTask(suggestions.getSuggestion());
+});
 
-  const counter = new TaskCounter();
+// Observer (step 2e): the counter, at the very end of the file
+const counter = new TaskCounter();
 todoService.subscribe(counter);
 counter.update(todoService.tasks);   // show the count at the start
-});
