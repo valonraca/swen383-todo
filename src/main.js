@@ -6,9 +6,11 @@ import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
+import { TaskCounter } from './TaskObservers.js';
 
 const factory = new ArchivingStorageFactory();
-const service = new ConfirmDeleteProxy(new LoggingTodoServiceDecorator(factory.createService()));
+const todoService = factory.createService();
+const service = new ConfirmDeleteProxy(new LoggingTodoServiceDecorator(todoService));
 const renderer   = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 
@@ -39,3 +41,7 @@ input.addEventListener('keydown', (event) => {
     addBtn.click();
   }
 });
+
+const counter = new TaskCounter();
+todoService.subscribe(counter);
+counter.update(todoService.tasks); 
