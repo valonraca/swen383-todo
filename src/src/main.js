@@ -5,7 +5,7 @@ import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TaskCounter } from './TaskObservers.js';
-
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
@@ -14,9 +14,14 @@ import { LocalStorageFactory } from './StorageFactory.js';
 const factory = new ArchivingStorageFactory();
 //const service = new LoggingTodoServiceDecorator(factory.createService());
 const todoService = factory.createService();
-const service = new ConfirmDeleteProxy(
-  new LoggingTodoServiceDecorator(todoService)
-);
+const history = new CommandHistory();
+addBtn.addEventListener('click', () => {
+  history.run(new AddTaskCommand(controller, input.value));
+  input.value = '';
+});
+document.getElementById('undo-btn').addEventListener('click', () => {
+  history.undo();
+});
 const renderer   = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 

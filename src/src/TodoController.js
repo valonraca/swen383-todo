@@ -24,4 +24,9 @@ export class TodoController {
     }
     return newId;
   }
+  // src/TodoController.js: one new method
+removeTask(id) {
+  this.todoService.deleteTask(id);
+  this.todoRenderer.render(this.todoService);
+}
 }
