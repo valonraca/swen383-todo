@@ -5,6 +5,17 @@ export class TodoService {
     constructor(storage) {
         this.storage = storage;
         this.tasks = this.storage.load();
+        this.observers = [];
+    }
+
+    subscribe(observer) {
+        this.observers.push(observer);
+    }
+
+    notify() {
+        for (const observer of this.observers) {
+            observer.update(this.tasks);
+        }
     }
 
     saveTasks() {
@@ -43,6 +54,7 @@ export class TodoService {
     store(task) {
         this.tasks.push(task);
         this.storage.save(this.tasks);
+        this.notify();
         return task.id;
     }
 
@@ -51,11 +63,13 @@ export class TodoService {
         if (!task) return;
         task.completed = !task.completed;
         this.saveTasks();
+        this.notify();
     }
 
     deleteTask(id) {
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.saveTasks();
+        this.notify();
     }
 
     getWorkloadSummary() {
