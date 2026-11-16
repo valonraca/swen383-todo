@@ -6,7 +6,20 @@ export class TodoService {
   constructor(storage) {
     this.storage = storage;
     this.tasks = this.storage.load();
+    this.observers = [];                 // NEW (step 2a)
   }
+
+  // ---- Observer: NEW (step 2a) ----
+  subscribe(observer) {
+    this.observers.push(observer);
+  }
+
+  notify() {
+    for (const observer of this.observers) {
+      observer.update(this.tasks);
+    }
+  }
+  // ---------------------------------
 
   addTask(description) {
     const trimmed = this.validate(description);
@@ -40,6 +53,7 @@ export class TodoService {
   store(task) {
     this.tasks.push(task);
     this.storage.save(this.tasks);
+    this.notify();                       // NEW (step 2b)
     return task.id;
   }
 
@@ -48,11 +62,13 @@ export class TodoService {
     if (!task) return;
     task.completed = !task.completed;
     this.storage.save(this.tasks);
+    this.notify();                       // NEW (step 2b)
   }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter(t => t.id !== id);
     this.storage.save(this.tasks);
+    this.notify();                       // NEW (step 2b)
   }
 
   // Information Expert: the class that holds the tasks does the counting.
