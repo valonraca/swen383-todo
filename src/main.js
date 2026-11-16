@@ -6,6 +6,7 @@ import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TaskCounter } from './TaskObservers.js';
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const factory = new ArchivingStorageFactory();
@@ -29,11 +30,18 @@ window.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('task-input');
   const addButton = document.getElementById('add-task-btn');
   const addUrgentButton = document.getElementById('add-urgent-btn');
+  const history = new CommandHistory();
 
   addButton.addEventListener('click', () => {
-    if (todoController.addTask(input.value)) {
+    const command = new AddTaskCommand(todoController, input.value);
+    history.run(command);
+    if (command.id) {
       input.value = '';
     }
+  });
+
+  document.getElementById('undo-btn').addEventListener('click', () => {
+    history.undo();
   });
 
   addUrgentButton.addEventListener('click', () => {
