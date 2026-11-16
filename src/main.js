@@ -5,15 +5,17 @@ import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
+import { TaskCounter } from './TaskObservers.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const factory = new ArchivingStorageFactory();
-  const todoService = new ConfirmDeleteProxy(
-   new LoggingTodoServiceDecorator(factory.createService())
+  const todoService = factory.createService();
+  const service = new ConfirmDeleteProxy(
+    new LoggingTodoServiceDecorator(todoService)
   );
   
   const todoRenderer = new TodoRenderer('task-container');
-  const todoController = new TodoController(todoService, todoRenderer);
+  const todoController = new TodoController(service, todoRenderer);
 
   const suggestions = new IdeaBoxAdapter(new IdeaBox());
   const suggestButton = document.getElementById('suggest-btn');
@@ -42,4 +44,8 @@ window.addEventListener('DOMContentLoaded', () => {
   input.addEventListener('keydown', event => {
     if (event.key === 'Enter') addButton.click();
   });
+
+  const counter = new TaskCounter();
+  todoService.subscribe(counter);
+  counter.update(todoService.tasks);
 });
