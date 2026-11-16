@@ -5,6 +5,18 @@ export class TodoService {
     constructor(storage) {
         this.storage = storage;
         this.tasks = this.storage.load();
+        this.observers = [];
+    }
+
+    // Observer: the Subject keeps a list and tells everyone when the tasks change.
+    subscribe(observer) {
+        this.observers.push(observer);
+    }
+
+    notify() {
+        for (const observer of this.observers) {
+            observer.update(this.tasks);
+        }
     }
 
     saveTasks() {
@@ -43,6 +55,7 @@ export class TodoService {
     store(task) {
         this.tasks.push(task);
         this.saveTasks();
+        this.notify();
         return task.id;
     }
 
@@ -51,11 +64,13 @@ export class TodoService {
         if (!task) return;
         task.completed = !task.completed;
         this.saveTasks();
+        this.notify();
     }
 
     deleteTask(id) {
         this.tasks = this.tasks.filter(t => t.id !== id);
         this.saveTasks();
+        this.notify();
     }
 
     // Information Expert: TodoService holds the tasks, so it answers questions about them.
