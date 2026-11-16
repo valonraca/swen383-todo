@@ -1,0 +1,77 @@
+@startuml UndoTask
+title Week 11 — Undo a successful normal addition
+actor User
+participant "Undo click handler in main.js" as Main
+participant "history: CommandHistory" as History
+participant "last: AddTaskCommand" as Command
+participant "controller: TodoController" as Controller
+participant "proxy: ConfirmDeleteProxy" as Proxy
+boundary "Browser confirm" as Confirm
+participant "logging: LoggingTodoServiceDecorator" as Logging
+participant "real: TodoService" as Service
+participant "storage: StorageGroup" as Storage
+participant "counter: TaskCounter" as Counter
+boundary "task-counter element" as Display
+participant "renderer: TodoRenderer" as Renderer
+
+note over Main, History
+  Precondition: history contains a successful normal Add/Enter command.
+  Empty history is a no-op. Urgent/suggestion adds are not in this stack.
+end note
+User -> Main : click Undo
+activate Main
+Main -> History : undo()
+activate History
+History -> History : last = done.pop()
+History -> Command : undo()
+activate Command
+Command -> Controller : removeTask(id)
+activate Controller
+Controller -> Proxy : deleteTask(id)
+activate Proxy
+Proxy -> Confirm : confirm("Delete this task?")
+Confirm -> User : OK / Cancel
+User --> Confirm : choice
+Confirm --> Proxy : true / false
+alt OK
+  Proxy -> Logging : deleteTask(id)
+  activate Logging
+  Logging -> Service : deleteTask(id)
+  activate Service
+  Service -> Service : remove task from active array
+  Service -> Storage : save(tasks)
+  activate Storage
+  Storage --> Service : list saved; archive retained
+  deactivate Storage
+  Service -> Service : notify()
+  Service -> Counter : update(tasks)
+  activate Counter
+  Counter -> Display : update open / done counts
+  Counter --> Service : undefined
+  deactivate Counter
+  Service --> Logging : undefined
+  deactivate Service
+  Logging --> Proxy : undefined
+  deactivate Logging
+else Cancel
+  note right of Proxy
+    No real delete, storage write, or notification.
+    The task stays. The command was already popped,
+    matching the history code supplied in the lab.
+  end note
+end
+Proxy --> Controller : undefined
+deactivate Proxy
+Controller -> Renderer : render(service-compatible object)
+activate Renderer
+Renderer --> Controller : updated or unchanged list displayed
+deactivate Renderer
+Controller --> Command : undefined
+deactivate Controller
+Command --> History : undefined
+deactivate Command
+History --> Main : undefined
+deactivate History
+Main --> User : Undo attempt finished
+deactivate Main
+@enduml
