@@ -3,6 +3,10 @@ import { test } from 'node:test';
 import { TodoService } from '../src/TodoService.js';
 import { InMemoryStorageHandler } from '../src/InMemoryStorageHandler.js';
 import { TaskCounter } from '../src/TaskObservers.js';
+import { AddTaskCommand, CommandHistory } from '../src/Commands.js';
+import { TodoController } from '../src/TodoController.js';
+import { ConfirmDeleteProxy } from '../src/ConfirmDeleteProxy.js';
+import { LoggingTodoServiceDecorator } from '../src/LoggingTodoServiceDecorator.js';
 
 test('counter shows loaded tasks and follows saved additions, toggles and deletions', t => {
   const counterElement = { textContent: '' };
@@ -39,4 +43,107 @@ test('counter shows loaded tasks and follows saved additions, toggles and deleti
   service.deleteTask(id);
   assert.equal(counterElement.textContent, 'Open: 1 · Done: 1');
   assert.equal(snapshots.length, 4);
+});
+
+test('Undo removes three successful adds newest first through the confirmation proxy', t => {
+  let nextId = 100;
+  t.mock.method(Date, 'now', () => nextId++);
+  t.mock.method(console, 'log', () => {});
+  const originals = { alert: globalThis.alert, confirm: globalThis.confirm };
+  let confirmations = 0;
+  globalThis.alert = () => {};
+  globalThis.confirm = message => {
+    assert.equal(message, 'Delete this task?');
+    confirmations++;
+    return true;
+  };
+  t.after(() => Object.assign(globalThis, originals));
+
+  const storage = new InMemoryStorageHandler();
+  const service = new TodoService(storage);
+  const observedCounts = [];
+  service.subscribe({ update: tasks => observedCounts.push(tasks.length) });
+  let renders = 0;
+  const controller = new TodoController(
+    new ConfirmDeleteProxy(new LoggingTodoServiceDecorator(service)),
+    { render: () => { renders++; } },
+  );
+  const history = new CommandHistory();
+  history.undo();
+  for (const description of ['First task', 'Second task', 'Third task']) {
+    history.run(new AddTaskCommand(controller, description));
+  }
+  history.run(new AddTaskCommand(controller, ' '));
+  assert.equal(history.done.length, 3);
+  for (const expected of [['First task', 'Second task'], ['First task'], []]) {
+    history.undo();
+    assert.deepEqual(service.tasks.map(task => task.desc), expected);
+    assert.deepEqual(storage.load(), service.tasks);
+  }
+  history.undo();
+  assert.equal(confirmations, 3);
+  assert.equal(renders, 6);
+  assert.deepEqual(observedCounts, [1, 2, 3, 2, 1, 0]);
+
+  history.run(new AddTaskCommand(controller, 'Keep this task'));
+  globalThis.confirm = () => false;
+  history.undo();
+  assert.equal(service.tasks[0].desc, 'Keep this task');
+  assert.equal(history.done.length, 0);
+});
+
+test('main wires startup counts, Add, Enter, Undo and the existing urgent/suggestion buttons', async t => {
+  const originals = {
+    document: globalThis.document,
+    localStorage: globalThis.localStorage,
+    alert: globalThis.alert,
+    confirm: globalThis.confirm,
+  };
+  t.after(() => Object.assign(globalThis, originals));
+  t.mock.method(console, 'log', () => {});
+  let nextId = 100;
+  t.mock.method(Date, 'now', () => nextId++);
+  const elements = new Map();
+  for (const id of ['task-input', 'add-task-btn', 'add-urgent-btn', 'suggest-btn',
+    'undo-btn', 'task-counter', 'task-container']) {
+    elements.set(id, {
+      value: '', textContent: '', innerHTML: '', listeners: {},
+      addEventListener(event, listener) { this.listeners[event] = listener; },
+      click() { this.listeners.click(); },
+      querySelectorAll() { return []; },
+      querySelector() { return null; },
+    });
+  }
+  const stored = new Map([['todo-tasks', JSON.stringify([
+    { id: 1, desc: 'Previously saved task', completed: true },
+  ])]]);
+  globalThis.document = { getElementById: id => elements.get(id), title: '' };
+  globalThis.localStorage = {
+    getItem: key => stored.get(key) ?? null,
+    setItem: (key, value) => stored.set(key, value),
+  };
+  globalThis.alert = () => {};
+  globalThis.confirm = () => true;
+  await import('../src/main.js');
+  const counter = elements.get('task-counter');
+  const input = elements.get('task-input');
+  assert.equal(counter.textContent, 'Open: 0 · Done: 1');
+  input.value = 'Added with button';
+  elements.get('add-task-btn').click();
+  assert.equal(input.value, '');
+  input.value = 'Added with Enter';
+  input.listeners.keydown({ key: 'Enter' });
+  input.value = 'Urgent task';
+  elements.get('add-urgent-btn').click();
+  elements.get('suggest-btn').click();
+  assert.equal(counter.textContent, 'Open: 4 · Done: 1');
+  elements.get('undo-btn').click();
+  elements.get('undo-btn').click();
+  elements.get('undo-btn').click();
+  assert.equal(counter.textContent, 'Open: 2 · Done: 1');
+  const tasks = JSON.parse(stored.get('todo-tasks'));
+  assert.equal(tasks.length, 3);
+  assert.equal(tasks[1].priority, 'high');
+  assert.ok(elements.get('task-container').innerHTML.includes('Previously saved task'));
+  assert.equal(document.title, 'Todo (2)');
 });

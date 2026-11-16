@@ -8,6 +8,11 @@ export class TodoController {
     this.todoRenderer.render(this.todoService);
   }
 
+  removeTask(id) {
+    this.todoService.deleteTask(id);
+    this.todoRenderer.render(this.todoService);
+  }
+
   addTask(description) {
     const newId = this.todoService.addTask(description);
     if (newId) {

@@ -20,6 +20,18 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 - `src/StorageHandler.js`, `src/LocalStorageHandler.js`, `src/InMemoryStorageHandler.js`, `src/ArchiveStorageHandler.js`, `src/StorageGroup.js`, and `src/StorageFactory.js` - storage backends, composite, and factories
 - `src/Task.js` and `src/TaskBuilder.js` - task creation
 - `src/IdeaBox.js`, `src/IdeaBoxAdapter.js`, `src/LoggingTodoServiceDecorator.js`, and `src/ConfirmDeleteProxy.js` - suggestion adapter, logging decorator, and delete confirmation proxy
+- `src/TaskObservers.js` - Observer-based open/done counter, updated on every saved task change
+- `src/Commands.js` - Command-based history for undoing successful Add Task actions, newest first
+
+## Week 11 behavior and checks
+
+The counter shows saved tasks on startup and updates after adding, completing, deleting, or undoing
+a task. Add Task (including Enter) records a command; Undo removes the latest successful regular
+add after the existing delete confirmation. Add Urgent and Get Suggestion do not enter this history.
+History lasts until the page reloads. As in the lab, canceling an Undo confirmation leaves the task
+in place but consumes that history entry.
+
+Run the automated behavior checks with Node.js: `node --test tests/week11.test.mjs`.
 
 ## License
 
