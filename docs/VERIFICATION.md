@@ -29,6 +29,12 @@ Cancel leaves both stored JSON values byte-for-byte unchanged, including across
 reload; OK persists removal from the active list while preserving the archive.
 Clearing all active tasks never removes the archive or reloads deleted records.
 
+Week 11 also passed initial counts from legacy saved tasks, updates after every
+mutation, Cancel without count/storage changes, three Add/Enter commands undone
+newest-first, failed adds excluded from history, urgent/suggestion actions outside
+history, empty Undo, and reload preserving data while resetting history. Tests
+also record the handout's pop-before-confirm behavior for canceled Undo.
+
 The harness supplies an empty favicon response because the static starter has
 no favicon. It does not suppress application errors. An isolated browser profile
 keeps these checks separate from the student's saved task list.
@@ -48,6 +54,7 @@ key, preserving compatibility with the starter's saved data.
   and the logging Decorator. No `todo.js`.
 - Week 9: sixteen files and eighteen declared classes, including the third factory,
   archive leaf, Composite group, and deletion Proxy.
+- Week 11: eighteen source files and twenty-three classes, adding Observer and Command roles.
 - `index.html` loads `src/main.js` as a module; imports use `./` and `.js`.
 - Service storage is injected; no direct browser-storage or DOM/rendering reference.
 - `main.js` delegates interactions to the controller.
@@ -60,7 +67,10 @@ key, preserving compatibility with the starter's saved data.
 - Week 9 leaves service, controller, renderer, active-list handler, and earlier
   pattern implementations unchanged; composition chooses the new group/proxy.
 - Suggestions cross the adapter as strings; the decorator exposes all six members.
-- The class, Add sequence, and Week 9 Delete sequence diagrams render as valid SVGs.
+- Counter subscription uses the raw service; wrappers remain unchanged. Service
+  notifications follow persistence and do not name a concrete observer.
+- Only normal Add/Enter create commands. Undo routes through controller.removeTask.
+- Class, Add, Delete, and Undo diagrams render as valid SVGs.
 
 ## Recheck
 
@@ -68,8 +78,8 @@ Open `index.html` with VS Code Live Server. Add normal and urgent tasks, press
 Enter, click Done/Undo/Delete, and reload. Preview `.puml` files with Alt+D.
 Original code and diagrams are preserved in the weekly Git tags.
 
-Run `node --test` from the repository root for eighteen storage-factory, builder,
-validation, controller, adapter, decorator, Composite, and Proxy tests. The browser
+Run `node --test` from the repository root for twenty-five storage-factory, builder,
+validation, controller, adapter, decorator, Composite, Proxy, Observer, and Command tests. The browser
 suite also checked in-memory reload
 behavior and compatibility with local tasks saved by earlier versions.
 

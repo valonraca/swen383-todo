@@ -1,4 +1,4 @@
-# Weeks 6–7 and 9: Pattern roles
+# Weeks 6–7, 9, and 11: Pattern roles
 
 ## Factory Method
 
@@ -92,7 +92,43 @@ original active-list handler need no changes.
 Design record: [Issue #12](https://github.com/ymorina/swen383-todo/issues/12).
 See [sequence-delete-task.puml](sequence-delete-task.puml) for both outcomes.
 
-Run the eighteen domain tests with `node --test`. The parent workspace's isolated
+## Observer
+
+| Role | Implementation |
+| --- | --- |
+| Subject | `TodoService`, with `observers`, `subscribe(observer)`, and `notify()` |
+| Observer | `TaskObserver`, exposing `update(tasks)` |
+| ConcreteObserver | `TaskCounter`, displaying `Open: n · Done: n` |
+| Client | `main.js`, subscribing and initially updating the counter |
+
+The Subject saves first, then notifies after `store`, `toggleComplete`, and
+`deleteTask`. It never names TaskCounter or accesses the DOM. Main retains the
+raw `todoService` before wrapping it, so the proxy and decorator do not need a
+subscription method. Invalid additions and canceled deletes do not notify.
+
+## Command
+
+| Role | Implementation |
+| --- | --- |
+| Command | `Command`, defining `execute()` / `undo()` |
+| ConcreteCommand | `AddTaskCommand`, capturing the description and returned task ID |
+| Receiver | `TodoController`, through `addTask()` / `removeTask()` |
+| Invoker | `CommandHistory`, storing successful commands in a last-in-first-out stack |
+| Client | `main.js`, creating commands for normal Add and Enter and wiring Undo |
+
+Only successful normal additions enter the history. Urgent additions and
+suggestions use their existing paths. Undo calls the receiver, which routes
+deletion through the same proxy/decorator and storage group. Observer updates
+the counter automatically after an accepted deletion. The history is transient.
+
+The supplied sample pops an entry before asking for confirmation. Cancel leaves
+the task but consumes that entry, and a fresh Undo moves to the next command.
+The implementation preserves this specified behavior. Normal Add also clears
+the field unconditionally, while rejected commands are not stored. No Redo or
+Undo for other actions is introduced. See [sequence-undo-task.puml](sequence-undo-task.puml).
+
+Run the twenty-five domain tests with `node --test`. The parent workspace's isolated
 browser harness also verified both storage choices, all existing UI actions,
 all suggestions, logging order/counts, invalid-input behavior, archive retention,
-and both delete-confirmation choices.
+both delete-confirmation choices, live counter updates, and Command history scope,
+ordering, invalid additions, empty history, cancellation, and reload behavior.

@@ -1,7 +1,8 @@
 # Todo App
 
 A small browser Todo list: add tasks, get suggestions, mark them complete, and
-confirm deletions. The active list and an archive are kept in browser storage.
+confirm deletions, and undo normal additions. An Observer counter shows open and
+completed totals. The active list and an archive are kept in browser storage.
 Plain HTML, CSS and JavaScript, no build step.
 
 This is the shared codebase for SWEN-383 (Software Design Principles and Patterns) at RIT Kosovo.
@@ -29,6 +30,8 @@ runs in your browser. Nothing to install beyond Git, a browser, and an editor.
 - `src/LoggingTodoServiceDecorator.js` - logs additions and delegates the service surface
 - `src/ArchiveStorageHandler.js` and `src/StorageGroup.js` - archive leaf and Composite storage
 - `src/ConfirmDeleteProxy.js` - guards deletion behind an OK/Cancel confirmation
+- `src/TaskObservers.js` - Observer base and counter updated by the service
+- `src/Commands.js` - normal-add command and in-memory Undo history
 - `SMELLS.md` - three findings from the original Week 1 source, with line citations
 - `docs/` - PlantUML diagrams, SVG previews, and completion/verification notes
 
@@ -39,14 +42,14 @@ The original starter is [valonraca/swen383-todo](https://github.com/valonraca/sw
 
 Git tags preserve each design stage: `coursework/starter`, `coursework/week1`,
 `coursework/week2`, `coursework/week3`, `coursework/week4`, `coursework/week5`,
-`coursework/week6`, `coursework/week7`, and `coursework/week9`.
+`coursework/week6`, `coursework/week7`, `coursework/week9`, and `coursework/week11`.
 The Week 2 tag contains the original-code diagrams; the diagrams on `main`
 describe the current implementation. Use `git show coursework/week2:docs/class-diagram.puml`
 to inspect the original diagram without changing the working tree.
 
 The feature branches are `feat/solid-refactoring`, `feat/grasp-controller`,
 `feat/w3-w4-refactor`, `feat/creational-patterns`, `feat/structural-patterns`,
-and `feat/composite-proxy`.
+`feat/composite-proxy`, and `feat/observer-command`.
 See [docs/COURSEWORK.md](docs/COURSEWORK.md) for the weekly
 deliverables and GitHub Issues, and [docs/VERIFICATION.md](docs/VERIFICATION.md)
 for the behavioral checks performed.
@@ -65,6 +68,14 @@ the task and makes no storage writes; OK removes it from the active list while
 retaining its archive record. Inspect the archive in the browser console with
 `JSON.parse(localStorage.getItem('todo-archive'))`. Each ID retains its first-saved
 record; the archive is not an edit-history log or a restore interface.
+
+Week 11 subscribes a counter directly to the underlying service. The global
+**Undo** button reverses successful normal Add/Enter actions newest first,
+through the same deletion confirmation. Urgent tasks and suggestions are not
+recorded for Undo. History resets on reload; saved tasks and archive remain.
+As in the handout, an Undo entry is popped before confirmation: Cancel keeps
+the task but consumes that history entry. Normal Add clears the input even when
+validation rejects the text; rejected additions never enter the history.
 
 Instructor review: [PR #46](https://github.com/valonraca/swen383-todo/pull/46).
 

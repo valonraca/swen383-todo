@@ -1,5 +1,5 @@
 @startuml DeleteTask
-title Week 9 — Delete confirmation (OK and Cancel)
+title Week 11 — Delete confirmation (OK and Cancel)
 actor User
 boundary "Delete button / bound onDelete callback" as UI
 participant "controller: TodoController" as Controller
@@ -11,6 +11,8 @@ participant "storage: StorageGroup" as Group
 participant "list: LocalStorageHandler" as List
 participant "archive: ArchiveStorageHandler" as Archive
 participant "renderer: TodoRenderer" as Renderer
+participant "counter: TaskCounter" as Counter
+boundary "task-counter element" as CounterDisplay
 
 User -> UI : click Delete
 UI -> Controller : deleteTask(id) via bound callback
@@ -35,6 +37,14 @@ alt user chooses OK
   Archive --> Group : unseen IDs appended; existing records retained
   Group --> Service : undefined
   deactivate Group
+  Service -> Service : notify()
+  loop registered observers (TaskCounter in this app)
+    Service -> Counter : update(tasks)
+    activate Counter
+    Counter -> CounterDisplay : set textContent to open / done counts
+    Counter --> Service : undefined
+    deactivate Counter
+  end
   Service --> Logging : undefined
   deactivate Service
   Logging --> Proxy : undefined
@@ -43,6 +53,7 @@ else user chooses Cancel
   note right of Proxy
     No call reaches the decorated service.
     Neither storage key is changed.
+    Subject does not notify; the counter is unchanged.
   end note
 end
 Proxy --> Controller : undefined
