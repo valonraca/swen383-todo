@@ -14,3 +14,4 @@ export class TaskCounter extends TaskObserver {
       `Open: ${open} · Done: ${done}`;
   }
 }
+
