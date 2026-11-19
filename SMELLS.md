@@ -12,7 +12,8 @@ Smell: Six positional parameters (id, desc, completed, priority, createdAt, show
 
 #3 Duplicated Code
 
- (renderPendingRows / renderCompletedRows).
+Where: src/todo.js, lines 62-78 (renderPendingRows / renderCompletedRows)
+Smell: The two methods are line-for-line identical except for the filter (`if (task.completed)` vs `if (!task.completed)`). Each loops the tasks, builds the same row with the same six arguments, and concatenates HTML, so any change to how a row is built must be made twice.
 
 #4 Feature Envy
 
