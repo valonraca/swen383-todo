@@ -1,16 +1,243 @@
 @startuml ClassDiagram
-class TodoList {
-  - items: Task[]
-  + add(t: Task)
-  + remove(id)
+title Todo App - class structure after Week 11
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide empty members
+
+' ---------------------------------------------------------------------------
+' JavaScript has no "implements", so the Decorator and the Proxy match
+' TodoService by having the same members, not by a declared interface.
+' TodoServiceLike records that shared set of members.
+' ---------------------------------------------------------------------------
+interface TodoServiceLike <<duck-typed>> {
+  + tasks : Task[]
+  + addTask(description) : id
+  + addUrgentTask(description) : id
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary() : String
 }
 
-class Task {
-  - title: String
-  - done: boolean
-  + complete()
+package "UI" {
+  class TodoController <<GRASP Controller>> {
+    - todoService : TodoServiceLike
+    - todoRenderer : TodoRenderer
+    + start()
+    + addTask(description) : id
+    + addUrgentTask(description) : id
+    + toggleTask(id)
+    + deleteTask(id)
+    + removeTask(id)
+  }
+
+  class TodoRenderer {
+    - container : HTMLElement
+    + renderPendingRows(service) : String
+    + renderCompletedRows(service) : String
+    + render(service, justAddedId)
+  }
 }
 
-TodoList *-- "0..*" Task : owns
-TodoList ..> Storage : uses
+package "Domain" {
+  class TodoService <<Subject>> {
+    - storage : StorageHandler
+    - tasks : Task[]
+    - observers : TaskObserver[]
+    + subscribe(observer)
+    + notify()
+    + addTask(description) : id
+    + addUrgentTask(description) : id
+    + validate(description) : String
+    + store(task) : id
+    + saveTasks()
+    + toggleComplete(id)
+    + deleteTask(id)
+    + getWorkloadSummary() : String
+  }
+
+  class Task <<Product>> {
+    + id : Number
+    + desc : String
+    + completed : Boolean
+    + priority : String
+    + createdAt : String
+  }
+
+  class TaskBuilder <<Builder>> {
+    - desc : String
+    - priority : String
+    + setPriority(priority) : TaskBuilder
+    + addLabel(label) : TaskBuilder
+    + build() : Task
+  }
+}
+
+package "Decorator / Proxy" {
+  class LoggingTodoServiceDecorator <<Decorator>> {
+    - todoService : TodoServiceLike
+    + addTask(description) : id
+    + addUrgentTask(description) : id
+  }
+
+  class ConfirmDeleteProxy <<Protection Proxy>> {
+    - todoService : TodoServiceLike
+    + deleteTask(id)
+  }
+}
+
+package "Storage" {
+  abstract class StorageHandler <<Component>> {
+    + {abstract} load() : Task[]
+    + {abstract} save(tasks)
+  }
+
+  class LocalStorageHandler <<Leaf>> {
+    - key : String = 'todo-tasks'
+  }
+
+  class InMemoryStorageHandler <<Leaf>> {
+    - tasks : Task[]
+  }
+
+  class ArchiveStorageHandler <<Leaf>> {
+    .. never removes a task ..
+  }
+
+  class StorageGroup <<Composite>> {
+    - members : StorageHandler[]
+    + add(handler)
+  }
+}
+
+package "Factory Method" {
+  abstract class StorageFactory <<Creator>> {
+    + createService() : TodoService
+    + {abstract} createStorage() : StorageHandler
+  }
+
+  class LocalStorageFactory <<ConcreteCreator>>
+  class InMemoryStorageFactory <<ConcreteCreator>>
+  class ArchivingStorageFactory <<ConcreteCreator>>
+}
+
+package "Adapter" {
+  class IdeaBoxAdapter <<Adapter>> {
+    - ideaBox : IdeaBox
+    + getSuggestion() : String
+  }
+
+  class IdeaBox <<Adaptee>> {
+    + pickRandomIdea() : {title, minutes}
+  }
+}
+
+package "Observer" {
+  abstract class TaskObserver <<Observer>> {
+    + {abstract} update(tasks)
+  }
+
+  class TaskCounter <<ConcreteObserver>> {
+    + update(tasks)
+  }
+}
+
+package "Command" {
+  abstract class Command {
+    + {abstract} execute()
+    + {abstract} undo()
+  }
+
+  class AddTaskCommand <<ConcreteCommand>> {
+    - controller : TodoController
+    - description : String
+    - id : Number
+    + execute() : id
+    + undo()
+  }
+
+  class CommandHistory <<Invoker>> {
+    - done : Command[]
+    + run(command)
+    + undo()
+  }
+}
+
+class main <<composition root>>
+
+' --- the shared member set -------------------------------------------------
+TodoServiceLike <|.. TodoService
+TodoServiceLike <|.. LoggingTodoServiceDecorator
+TodoServiceLike <|.. ConfirmDeleteProxy
+
+LoggingTodoServiceDecorator o--> "1" TodoServiceLike : wraps
+ConfirmDeleteProxy o--> "1" TodoServiceLike : stands in for
+
+' --- UI --------------------------------------------------------------------
+TodoController --> "1" TodoServiceLike
+TodoController --> "1" TodoRenderer
+TodoRenderer ..> TodoServiceLike : reads tasks,\ncalls back
+
+' --- domain ----------------------------------------------------------------
+TodoService *--> "0..*" Task : owns
+TodoService ..> TaskBuilder : builds every task with
+TaskBuilder ..> Task : <<creates>>
+TodoService o--> "1" StorageHandler
+
+' --- storage ---------------------------------------------------------------
+StorageHandler <|-- LocalStorageHandler
+StorageHandler <|-- InMemoryStorageHandler
+StorageHandler <|-- ArchiveStorageHandler
+StorageHandler <|-- StorageGroup
+StorageGroup o--> "1..*" StorageHandler : members
+
+' --- factory method --------------------------------------------------------
+StorageFactory <|-- LocalStorageFactory
+StorageFactory <|-- InMemoryStorageFactory
+StorageFactory <|-- ArchivingStorageFactory
+StorageFactory ..> TodoService : <<creates>>
+LocalStorageFactory ..> LocalStorageHandler : <<creates>>
+InMemoryStorageFactory ..> InMemoryStorageHandler : <<creates>>
+ArchivingStorageFactory ..> StorageGroup : <<creates>>
+
+' --- adapter ---------------------------------------------------------------
+IdeaBoxAdapter o--> "1" IdeaBox
+
+' --- observer --------------------------------------------------------------
+TaskObserver <|-- TaskCounter
+TodoService o--> "0..*" TaskObserver : observers
+
+' --- command ---------------------------------------------------------------
+Command <|-- AddTaskCommand
+AddTaskCommand --> "1" TodoController : receiver
+CommandHistory o--> "0..*" Command : done
+
+' --- composition root ------------------------------------------------------
+main ..> ArchivingStorageFactory
+main ..> LoggingTodoServiceDecorator
+main ..> ConfirmDeleteProxy
+main ..> TodoController
+main ..> TodoRenderer
+main ..> IdeaBoxAdapter
+main ..> TaskCounter
+main ..> CommandHistory
+
+note right of main
+  The only place that decides
+  which classes are created and
+  how they are wired:
+
+  service = ConfirmDeleteProxy(
+    LoggingTodoServiceDecorator(
+      ArchivingStorageFactory()
+        .createService()))
+end note
+
+note bottom of StorageGroup
+  TodoService calls save() once.
+  The group passes it to every member:
+  LocalStorageHandler replaces the list,
+  ArchiveStorageHandler only adds to it.
+end note
+
 @enduml

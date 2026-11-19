@@ -1,14 +1,139 @@
 @startuml AddTask
-actor User
-participant TodoList
-participant Storage
+title Clicking "Add Task" after Week 11
 
-User -> TodoList : add("Buy milk")
-activate TodoList
-TodoList -> Storage : save(items)
-activate Storage
-Storage --> TodoList : ok
-deactivate Storage
-TodoList --> User : re-render
-deactivate TodoList
+skinparam sequenceMessageAlign first
+skinparam maxMessageSize 180
+
+actor User
+participant "main.js" as Main
+participant "history\n: CommandHistory" as History <<Invoker>>
+participant "cmd\n: AddTaskCommand" as Cmd <<ConcreteCommand>>
+participant "controller\n: TodoController" as Ctrl <<Controller>>
+participant "service\n: ConfirmDeleteProxy" as Proxy <<Proxy>>
+participant ": LoggingTodoServiceDecorator" as Deco <<Decorator>>
+participant "todoService\n: TodoService" as Svc <<Subject>>
+participant ": TaskBuilder" as Builder <<Builder>>
+participant "task\n: Task" as Task <<Product>>
+participant "storage\n: StorageGroup" as Group <<Composite>>
+participant ": LocalStorageHandler" as Local <<Leaf>>
+participant ": ArchiveStorageHandler" as Archive <<Leaf>>
+participant "counter\n: TaskCounter" as Counter <<Observer>>
+participant "renderer\n: TodoRenderer" as View
+
+User -> Main : click "Add Task"
+activate Main
+
+Main -> Cmd : <<create>> new AddTaskCommand(controller, input.value)
+Main -> History : run(cmd)
+activate History
+
+History -> Cmd : execute()
+activate Cmd
+
+Cmd -> Ctrl : addTask(description)
+activate Ctrl
+
+== the wrappers, outermost first ==
+
+Ctrl -> Proxy : addTask(description)
+activate Proxy
+note right of Proxy : passes adds straight on;\nonly deleteTask() is guarded
+
+Proxy -> Deco : addTask(description)
+activate Deco
+Deco -> Deco : console.log('LOG: addTask', description)
+
+Deco -> Svc : addTask(description)
+activate Svc
+
+== the domain ==
+
+Svc -> Svc : validate(description)
+alt description too short (< 3 chars)
+  Svc --> Deco : null
+  note right of Svc : alert(), and nothing is\nbuilt, saved or drawn
+else valid
+  Svc -> Builder : <<create>> new TaskBuilder(trimmed)
+  Svc -> Builder : build()
+  activate Builder
+  Builder -> Task : <<create>> new Task(builder)
+  Builder --> Svc : task
+  deactivate Builder
+
+  Svc -> Svc : store(task)
+  activate Svc
+
+  Svc -> Svc : tasks.push(task)
+
+  == Composite: one save() reaches both stores ==
+
+  Svc -> Group : save(tasks)
+  activate Group
+  Group -> Local : save(tasks)
+  activate Local
+  Local --> Group
+  deactivate Local
+  Group -> Archive : save(tasks)
+  activate Archive
+  note right of Archive : adds only tasks it has\nnot seen; never removes one
+  Archive --> Group
+  deactivate Archive
+  Group --> Svc
+  deactivate Group
+
+  == Observer: the subject tells the counter ==
+
+  Svc -> Counter : update(tasks)
+  activate Counter
+  Counter -> Counter : write "Open: n · Done: m"\ninto #task-counter
+  Counter --> Svc
+  deactivate Counter
+
+  Svc --> Svc : task.id
+  deactivate Svc
+  Svc --> Deco : task.id
+end
+deactivate Svc
+
+Deco --> Proxy : task.id
+deactivate Deco
+Proxy --> Ctrl : task.id
+deactivate Proxy
+
+== back in the controller ==
+
+alt newId is truthy
+  Ctrl -> View : render(service, newId)
+  activate View
+  View -> Proxy : tasks
+  activate Proxy
+  Proxy --> View : the real task list
+  deactivate Proxy
+  View -> Proxy : getWorkloadSummary()
+  activate Proxy
+  Proxy --> View : "1/3 done - ..."
+  deactivate Proxy
+  View -> View : write both lists into #task-container,\nwire Done / Delete, flash the new row
+  View --> Ctrl
+  deactivate View
+end
+
+Ctrl --> Cmd : newId
+deactivate Ctrl
+
+Cmd --> History : newId
+deactivate Cmd
+
+alt newId is truthy
+  History -> History : done.push(cmd)
+  note right of History : only adds that worked\nare kept for Undo
+end
+
+History --> Main
+deactivate History
+
+Main -> Main : clear the input box
+Main --> User : updated page
+deactivate Main
+
 @enduml
