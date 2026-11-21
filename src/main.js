@@ -7,11 +7,13 @@ import { IdeaBox } from './IdeaBox.js';
 import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
 import { LoggingTodoServiceDecorator } from './loggingTodoServiceDecorator.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
-
+import { TaskCounter } from './TaskObservers.js';
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 
 const factory = new ArchivingStorageFactory();
+const todoService = factory.createService();
 const service = new ConfirmDeleteProxy(
-  new LoggingTodoServiceDecorator(factory.createService())
+  new LoggingTodoServiceDecorator(todoService)
 );
 const renderer   = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
@@ -23,11 +25,18 @@ const addBtn       = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 const suggestBtn   = document.getElementById('suggest-btn');
 
+const history = new CommandHistory();
+
+// Single click listener using Command History
 addBtn.addEventListener('click', () => {
-  if (controller.addTask(input.value)) {
-    input.value = '';
-  }
+  history.run(new AddTaskCommand(controller, input.value));
+  input.value = '';
 });
+
+document.getElementById('undo-btn').addEventListener('click', () => {
+  history.undo();
+});
+
 addUrgentBtn.addEventListener('click', () => {
   if (controller.addUrgentTask(input.value)) {
     input.value = '';
@@ -43,3 +52,7 @@ const suggestions = new IdeaBoxAdapter(new IdeaBox());
 suggestBtn.addEventListener('click', () => {
   controller.addTask(suggestions.getSuggestion());
 });
+
+const counter = new TaskCounter();
+todoService.subscribe(counter);
+counter.update(todoService.tasks);
