@@ -13,14 +13,17 @@ const input        = document.getElementById('task-input');
 const addBtn       = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 
-function add(type) {
-  if (controller.addTask(input.value, type)) {
+addBtn.addEventListener('click', () => {
+  if (controller.addTask(input.value)) {
     input.value = '';
   }
-}
+});
 
-addBtn.addEventListener('click', () => add('simple'));
-addUrgentBtn.addEventListener('click', () => add('urgent'));
+addUrgentBtn.addEventListener('click', () => {
+  if (controller.addUrgentTask(input.value)) {
+    input.value = '';
+  }
+});
 
 input.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
