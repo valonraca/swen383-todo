@@ -7,6 +7,7 @@ import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
 import { ArchivingStorageFactory } from './StorageFactory.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
+import { AddTaskCommand, CommandHistory } from './Commands.js';
 import { TaskCounter } from './TaskObservers.js';
 
 const factory = new ArchivingStorageFactory();
@@ -29,10 +30,13 @@ const input = document.getElementById('task-input');
 const addBtn = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
 
+const history = new CommandHistory();
 addBtn.addEventListener('click', () => {
-    if (controller.addTask(input.value)) {
-        input.value = '';
-    }
+    history.run(new AddTaskCommand(controller, input.value));
+    input.value = '';
+});
+document.getElementById('undo-btn').addEventListener('click', () => {
+    history.undo();
 });
 
 addUrgentBtn.addEventListener('click', () => {
