@@ -6,6 +6,17 @@ export class TodoService {
         this.storage = storage;
         this.tasks = this.storage.load();
         this.history = [];
+        this.observers = [];
+    }
+
+    subscribe(observer) {
+        this.observers.push(observer);
+    }
+
+    notify() {
+        for (const observer of this.observers) {
+            observer.update(this.tasks);
+        }
     }
 
     saveTasks() {
@@ -24,6 +35,7 @@ export class TodoService {
         if (!this.canUndo()) return false;
         this.tasks = this.history.pop();
         this.saveTasks();
+        this.notify();
         return true;
     }
 
@@ -65,6 +77,7 @@ export class TodoService {
         this.rememberState();
         this.tasks.push(task);
         this.saveTasks();
+        this.notify();
         return task.id;
     }
 
@@ -92,6 +105,7 @@ export class TodoService {
         this.rememberState();
         task.completed = !task.completed;
         this.saveTasks();
+        this.notify();
     }
 
     deleteTask(id) {
@@ -101,5 +115,6 @@ export class TodoService {
         this.rememberState();
         this.tasks = this.tasks.filter((t) => Number(t.id) !== taskId && t.id !== id);
         this.saveTasks();
+        this.notify();
     }
 }
