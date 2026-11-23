@@ -1,6 +1,6 @@
 
 import { TaskBuilder } from './TaskBuilder.js';
-
+import { stateOf } from './TaskState.js';
 export class TodoService {
   constructor(storage) {
     this.storage = storage;
@@ -75,7 +75,7 @@ export class TodoService {
       return;
     }
 
-    task.completed = !task.completed;
+    stateOf(task).next(task);
     this.applySort();
     this.storage.save(this.tasks);
   }
