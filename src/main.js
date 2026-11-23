@@ -1,4 +1,5 @@
 import { TodoRenderer } from './TodoRenderer.js';
+import { SortByName, SortByNewest } from './SortStrategy.js';
 import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
 
@@ -43,4 +44,13 @@ input.addEventListener('keydown', (event) => {
     event.preventDefault();
     addBtn.click();
   }
+});
+document.getElementById('sort-name-btn').addEventListener('click', () => {
+  service.setSortStrategy(new SortByName());
+  controller.start();
+});
+
+document.getElementById('sort-newest-btn').addEventListener('click', () => {
+  service.setSortStrategy(new SortByNewest());
+  controller.start();
 });
