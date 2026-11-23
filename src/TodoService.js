@@ -13,6 +13,18 @@ export class TodoService {
         this.observers.push(observer);
     }
 
+    setSortStrategy(strategy) {
+        this.sortStrategy = strategy;
+        this.applySort();
+        this.notify();
+    }
+
+    applySort() {
+        if (this.sortStrategy) {
+            this.sortStrategy.sort(this.tasks);
+        }
+    }
+
     notify() {
         for (const observer of this.observers) {
             observer.update(this.tasks);
@@ -50,6 +62,7 @@ export class TodoService {
 
     store(task) {
         this.tasks.push(task);
+        this.applySort();
         this.storage.save(this.tasks);
         this.notify();
         return task.id;
