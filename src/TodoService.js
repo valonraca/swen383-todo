@@ -1,4 +1,6 @@
 // TodoService owns the task list and the operations on it. No DOM in here.
+import { TaskBuilder } from './TaskBuilder.js';
+
 export class TodoService {
     constructor(storage) {
         this.storage = storage;
@@ -8,13 +10,6 @@ export class TodoService {
 
     saveTasks() {
         this.storage.save(this.tasks);
-    }
-
-    createTaskId() {
-        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-            return crypto.randomUUID();
-        }
-        return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
     rememberState() {
@@ -36,7 +31,24 @@ export class TodoService {
         return this.undo();
     }
 
-    addTask(description, type) {
+    addTask(description) {
+        const trimmed = this.validate(description);
+        if (!trimmed) return null;
+        const task = new TaskBuilder(trimmed).build();
+        return this.store(task);
+    }
+
+    addUrgentTask(description) {
+        const trimmed = this.validate(description);
+        if (!trimmed) return null;
+        const task = new TaskBuilder(trimmed)
+            .setPriority('high')
+            .addLabel('URGENT')
+            .build();
+        return this.store(task);
+    }
+
+    validate(description) {
         const trimmed = description.trim();
         if (trimmed.length < 3) {
             alert('Task needs at least a few characters.');
@@ -46,15 +58,10 @@ export class TodoService {
         if (this.tasks.length >= 20) {
             console.warn('This list is getting long - consider clearing completed tasks.');
         }
+        return trimmed;
+    }
 
-        const task = {
-            id: this.createTaskId(),
-            desc: trimmed,
-            completed: false,
-            priority: type === 'urgent' ? 'high' : 'normal',
-            createdAt: new Date().toLocaleTimeString()
-        };
-
+    store(task) {
         this.rememberState();
         this.tasks.push(task);
         this.saveTasks();
