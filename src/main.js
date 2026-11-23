@@ -9,6 +9,7 @@ import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TaskCounter } from './TaskObservers.js';
 import { AddTaskCommand, CommandHistory } from './Commands.js';
+import { SortByName, SortByNewest } from './SortStrategy.js';
 
 const factory = new LocalStorageFactory();
 // factory = new ArchivingStorageFactory();
@@ -53,4 +54,14 @@ input.addEventListener('keydown', (event) => {
 
 const counter = new TaskCounter();
 todoService.subscribe(counter);
-counter.update(todoService.tasks); 
+counter.update(todoService.tasks);
+
+// Strategy: each button picks a sort order
+document.getElementById('sort-name-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByName());
+  controller.start();               // draw the list again
+});
+document.getElementById('sort-newest-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByNewest());
+  controller.start();
+});

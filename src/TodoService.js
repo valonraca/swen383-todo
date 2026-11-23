@@ -50,8 +50,9 @@ export class TodoService {
 
     store(task) {
         this.tasks.push(task);
+        this.applySort();
         this.storage.save(this.tasks);
-        this.notify();                   // new
+        this.notify();
         return task.id;
     }
 
@@ -87,4 +88,18 @@ export class TodoService {
         return `${done}/${this.tasks.length} done - ${urgent} urgent, ${normal} normal remaining`;
     }
 
+    // Strategy: the service holds one sort order and asks it to sort.
+    setSortStrategy(strategy) {
+        this.sortStrategy = strategy;
+        this.applySort();
+        this.notify();
+    }
+
+    applySort() {
+        if (this.sortStrategy) {
+            this.sortStrategy.sort(this.tasks);
+        }
+    }
 }
+
+
