@@ -1,5 +1,7 @@
 // LocalStorageHandler is the only code that knows tasks live in localStorage.
-export class LocalStorageHandler {
+import { StorageHandler } from './StorageHandler.js';
+
+export class LocalStorageHandler extends StorageHandler {
     constructor(key = 'todo-tasks') {
         this.key = key;
     }

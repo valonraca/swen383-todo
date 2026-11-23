@@ -1,9 +1,9 @@
-import { TodoService } from './TodoService.js';
 import { TodoRenderer } from './TodoRenderer.js';
-import { LocalStorageHandler } from './LocalStorageHandler.js';
 import { TodoController } from './TodoController.js';
+import { LocalStorageFactory } from './StorageFactory.js';
 
-const service = new TodoService(new LocalStorageHandler());
+const factory = new LocalStorageFactory();
+const service = factory.createService();
 const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 controller.start();
@@ -17,14 +17,18 @@ if (!input || !addBtn || !addUrgentBtn || !undoBtn) {
   throw new Error('Required Todo App controls were not found.');
 }
 
-function add(type) {
-  if (controller.addTask(input.value, type)) {
+addBtn.addEventListener('click', () => {
+  if (controller.addTask(input.value)) {
     input.value = '';
   }
-}
+});
 
-addBtn.addEventListener('click', () => add('simple'));
-addUrgentBtn.addEventListener('click', () => add('urgent'));
+addUrgentBtn.addEventListener('click', () => {
+  if (controller.addUrgentTask(input.value)) {
+    input.value = '';
+  }
+});
+
 undoBtn.addEventListener('click', () => {
   if (service.undo()) {
     renderer.render(service);
