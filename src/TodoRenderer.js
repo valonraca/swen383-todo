@@ -44,4 +44,5 @@ function renderTask(task) {
         <button data-delete="${task.id}">Delete</button>
       </span>
     </li>`;
+    
 }

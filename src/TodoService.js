@@ -1,9 +1,23 @@
+
 import { TaskBuilder } from './TaskBuilder.js';
 
 export class TodoService {
   constructor(storage) {
     this.storage = storage;
     this.tasks = this.storage.load();
+    this.sortStrategy = null;
+  }
+
+  setSortStrategy(strategy) {
+    this.sortStrategy = strategy;
+    this.applySort();
+    this.storage.save(this.tasks);
+  }
+
+  applySort() {
+    if (this.sortStrategy) {
+      this.sortStrategy.sort(this.tasks);
+    }
   }
 
   addTask(description) {
@@ -26,18 +40,22 @@ export class TodoService {
       .setPriority('high')
       .addLabel('URGENT')
       .build();
+
     return this.store(task);
   }
 
   validate(description) {
     const trimmed = description.trim();
+
     if (trimmed.length < 3) {
       alert('Task needs at least a few characters.');
       return null;
     }
 
     if (this.tasks.length >= 20) {
-      console.warn('This list is getting long - consider clearing completed tasks.');
+      console.warn(
+        'This list is getting long - consider clearing completed tasks.'
+      );
     }
 
     return trimmed;
@@ -45,17 +63,20 @@ export class TodoService {
 
   store(task) {
     this.tasks.push(task);
+    this.applySort();
     this.storage.save(this.tasks);
     return task.id;
   }
 
   toggleComplete(id) {
     const task = this.tasks.find((item) => item.id === id);
+
     if (!task) {
       return;
     }
 
     task.completed = !task.completed;
+    this.applySort();
     this.storage.save(this.tasks);
   }
 
