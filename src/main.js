@@ -59,10 +59,10 @@ window.addEventListener('DOMContentLoaded', () => {
   counter.update(todoService.tasks);
   document.getElementById('sort-name-btn').addEventListener('click', () => {
   todoService.setSortStrategy(new SortByName());
-  controller.start();               // draw the list again
+  todoController.start();           // draw the list again
 });
 document.getElementById('sort-newest-btn').addEventListener('click', () => {
   todoService.setSortStrategy(new SortByNewest());
-  controller.start();
+  todoController.start();
 });
 });
