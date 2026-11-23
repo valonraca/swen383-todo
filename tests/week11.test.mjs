@@ -39,10 +39,13 @@ test('counter shows loaded tasks and follows saved additions, toggles and deleti
   service.addUrgentTask('Urgent task');
   assert.equal(counterElement.textContent, 'Open: 2 · Done: 1');
   service.toggleComplete(id);
+  assert.equal(counterElement.textContent, 'Open: 2 · Done: 1');
+  assert.equal(service.tasks.find(task => task.id === id).status, 'doing');
+  service.toggleComplete(id);
   assert.equal(counterElement.textContent, 'Open: 1 · Done: 2');
   service.deleteTask(id);
   assert.equal(counterElement.textContent, 'Open: 1 · Done: 1');
-  assert.equal(snapshots.length, 4);
+  assert.equal(snapshots.length, 5);
 });
 
 test('Undo removes three successful adds newest first through the confirmation proxy', t => {
@@ -104,13 +107,25 @@ test('main wires startup counts and the task and sorting controls', async t => {
   let nextId = 100;
   t.mock.method(Date, 'now', () => nextId++);
   const elements = new Map();
+  let toggleButtons;
   for (const id of ['task-input', 'add-task-btn', 'add-urgent-btn', 'suggest-btn',
     'undo-btn', 'sort-name-btn', 'sort-newest-btn', 'task-counter', 'task-container']) {
     elements.set(id, {
       value: '', textContent: '', innerHTML: '', listeners: {},
       addEventListener(event, listener) { this.listeners[event] = listener; },
       click() { this.listeners.click(); },
-      querySelectorAll() { return []; },
+      querySelectorAll(selector) {
+        if (selector !== '[data-toggle]') return [];
+        toggleButtons = new Map();
+        for (const [, id] of this.innerHTML.matchAll(/data-toggle="(\d+)"/g)) {
+          const button = {
+            dataset: { toggle: id },
+            addEventListener(event, listener) { this[event] = listener; },
+          };
+          toggleButtons.set(Number(id), button);
+        }
+        return [...toggleButtons.values()];
+      },
       querySelector() { return null; },
     });
   }
@@ -157,4 +172,20 @@ test('main wires startup counts and the task and sorting controls', async t => {
   elements.get('sort-newest-btn').click();
   assert.match(container.innerHTML, /<ul>\s*<li[^>]*>\s*<span[^>]*>A new task<\/span>/);
   assert.match(container.innerHTML, /oldest: \[URGENT\] Urgent task/);
+
+  const lastId = JSON.parse(stored.get('todo-tasks')).find(task => task.desc === 'A new task').id;
+  toggleButtons.get(lastId).click();
+  assert.match(container.innerHTML, /To do<\/h2><ul>[\s\S]*\[DOING\] A new task[\s\S]*Completed<\/h2>/);
+  assert.equal(JSON.parse(stored.get('todo-tasks'))[0].status, 'doing');
+  await import('../src/main.js?reload=doing');
+  assert.match(container.innerHTML, /To do<\/h2><ul>[\s\S]*\[DOING\] A new task[\s\S]*Completed<\/h2>/);
+  toggleButtons.get(lastId).click();
+  await import('../src/main.js?reload=done');
+  assert.match(container.innerHTML, /Completed<\/h2><ul>[\s\S]*>A new task<\/span>/);
+  assert.doesNotMatch(container.innerHTML, /\[DOING\] A new task/);
+  toggleButtons.get(lastId).click();
+  toggleButtons.get(1).click();
+  const reloadedTasks = JSON.parse(stored.get('todo-tasks'));
+  assert.equal(reloadedTasks.find(task => task.id === lastId).status, 'open');
+  assert.equal(reloadedTasks.find(task => task.id === 1).status, 'open');
 });
