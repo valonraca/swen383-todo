@@ -1,4 +1,5 @@
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 // TodoService owns the task list and the operations on it. No DOM in here.
 export class TodoService {
@@ -75,7 +76,7 @@ export class TodoService {
     toggleComplete(id) {
         const task = this.tasks.find(t => t.id === id);
         if (!task) return;
-        task.completed = !task.completed;
+        stateOf(task).next(task);         // State: the task's phase decides what comes next
         this.saveTasks();
         this.notify();
     }
