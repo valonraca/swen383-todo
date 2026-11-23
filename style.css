@@ -8,6 +8,7 @@ h1 { font-size: 1.4rem; }
 .input-area { margin-bottom: 15px; }
 #task-input { width: 300px; padding: 5px; }
 button { padding: 5px 10px; cursor: pointer; }
+button:disabled { cursor: default; opacity: 0.55; }
 .status { color: #555; font-size: 0.9rem; margin: 10px 0; }
 .section-title { font-size: 0.95rem; color: #555; margin: 14px 0 6px; }
 #task-container ul { list-style: none; padding: 0; margin: 0; }
