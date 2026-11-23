@@ -6,21 +6,34 @@ export class TodoService {
     this.storage = storage;
     this.tasks = this.storage.load();
     this.observers = [];
+    this.sortStrategy = null;
   }
-  subscribe(observer) {
-  this.observers.push(observer);
-}
 
-notify() {
-  for (const observer of this.observers) {
-    observer.update(this.tasks);
+  subscribe(observer) {
+    this.observers.push(observer);
   }
-}
+
+  notify() {
+    for (const observer of this.observers) {
+      observer.update(this.tasks);
+    }
+  }
+
+  setSortStrategy(strategy) {
+    this.sortStrategy = strategy;
+    this.applySort();
+    this.notify();
+  }
+
+  applySort() {
+    if (this.sortStrategy) {
+      this.sortStrategy.sort(this.tasks);
+    }
+  }
 
   addTask(description) {
     const trimmed = this.validate(description);
     if (!trimmed) return null;
-  
 
     const task = new TaskBuilder(trimmed).build();
     return this.store(task);
@@ -57,8 +70,9 @@ notify() {
 
   store(task) {
     this.tasks.push(task);
+    this.applySort();
     this.storage.save(this.tasks);
-    this.notify();   
+    this.notify();
     return task.id;
   }
 

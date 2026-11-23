@@ -1,3 +1,4 @@
+import { SortByName, SortByNewest } from './SortStrategy.js';
 import { AddTaskCommand, CommandHistory } from './Commands.js';
 import { TaskCounter } from './TaskObservers.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
@@ -60,4 +61,12 @@ input.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') {
     addBtn.click();
   }
+});
+document.getElementById('sort-name-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByName());
+  controller.start();               // draw the list again
+});
+document.getElementById('sort-newest-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByNewest());
+  controller.start();
 });
