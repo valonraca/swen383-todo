@@ -1,19 +1,24 @@
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
 import { LocalStorageFactory } from './StorageFactory.js';
+import { IdeaBox } from './IdeaBox.js';
+import { IdeaBoxAdapter } from './IdeaBoxAdapter.js';
+import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 
 const factory = new LocalStorageFactory();
-const service = factory.createService();
+const service = new LoggingTodoServiceDecorator(factory.createService());
 const renderer = new TodoRenderer('task-container');
 const controller = new TodoController(service, renderer);
 controller.start();
+const suggestions = new IdeaBoxAdapter(new IdeaBox());
 
 const input = document.getElementById('task-input');
 const addBtn = document.getElementById('add-task-btn');
 const addUrgentBtn = document.getElementById('add-urgent-btn');
+const suggestBtn = document.getElementById('suggest-btn');
 const undoBtn = document.getElementById('undo-btn');
 
-if (!input || !addBtn || !addUrgentBtn || !undoBtn) {
+if (!input || !addBtn || !addUrgentBtn || !suggestBtn || !undoBtn) {
   throw new Error('Required Todo App controls were not found.');
 }
 
@@ -27,6 +32,10 @@ addUrgentBtn.addEventListener('click', () => {
   if (controller.addUrgentTask(input.value)) {
     input.value = '';
   }
+});
+
+suggestBtn.addEventListener('click', () => {
+  controller.addTask(suggestions.getSuggestion());
 });
 
 undoBtn.addEventListener('click', () => {
