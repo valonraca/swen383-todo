@@ -1,4 +1,5 @@
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 // Owns task data and business logic.
 export class TodoService {
@@ -80,8 +81,9 @@ export class TodoService {
     const task = this.tasks.find(task => task.id === id);
 
     if (task) {
-      task.completed = !task.completed;
+      stateOf(task).next(task);
       this.storage.save(this.tasks);
+      this.notify();
     }
   }
 
