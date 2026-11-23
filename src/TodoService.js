@@ -41,11 +41,11 @@ addTask(description) {
 
 store(task) {
   this.tasks.push(task);
+  this.applySort();  
   this.storage.save(this.tasks);
-  this.notify();                   // new
+  this.notify();
   return task.id;
 }
-
 
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
@@ -83,6 +83,18 @@ store(task) {
 notify() {
   for (const observer of this.observers) {
     observer.update(this.tasks);
+  }
+}
+
+setSortStrategy(strategy) {
+  this.sortStrategy = strategy;
+  this.applySort();
+  this.notify();
+}
+
+applySort() {
+  if (this.sortStrategy) {
+    this.sortStrategy.sort(this.tasks);
   }
 }
 }
