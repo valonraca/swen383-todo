@@ -1,4 +1,5 @@
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 // Owns the tasks and their rules; storage is supplied by the caller.
 export class TodoService {
@@ -61,7 +62,7 @@ export class TodoService {
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
-    task.completed = !task.completed;
+    stateOf(task).next(task);
     this.storage.save(this.tasks);
     this.notify();
   }
