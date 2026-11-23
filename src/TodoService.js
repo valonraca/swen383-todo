@@ -1,5 +1,6 @@
 // src/TodoService.js
 // Owns the tasks. Knows nothing about the page and nothing about localStorage.
+import { stateOf } from './TaskState.js';
 import { TaskBuilder } from './TaskBuilder.js';
 
 export class TodoService {
@@ -59,7 +60,7 @@ export class TodoService {
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
-    task.completed = !task.completed;
+    stateOf(task).next(task);
     this.storage.save(this.tasks);
     this.notify(); // 3. Notify observers on toggle
   }
