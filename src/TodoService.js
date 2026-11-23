@@ -51,6 +51,7 @@ export class TodoService {
 
   store(task) {
     this.tasks.push(task);
+    this.applySort();                 
     this.storage.save(this.tasks);
     this.notify();
     return task.id;
@@ -70,6 +71,19 @@ export class TodoService {
     this.storage.save(this.tasks);
     this.notify();
   }
+
+  setSortStrategy(strategy) {
+    this.sortStrategy = strategy;
+    this.applySort();
+    this.notify();
+  }
+
+  applySort() {
+    if (this.sortStrategy) {
+      this.sortStrategy.sort(this.tasks);
+    }
+  }
+
   getWorkloadSummary(){
     let done = 0;
     let urgent = 0;
