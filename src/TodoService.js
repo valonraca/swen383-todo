@@ -2,6 +2,7 @@
 // Owns the tasks. Knows nothing about the page and nothing about localStorage.
 
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 export class TodoService {
   constructor(storage) {
@@ -61,7 +62,7 @@ export class TodoService {
   toggleComplete(id) {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
-    task.completed = !task.completed;
+    stateOf(task).next(task);
     this.storage.save(this.tasks);
     this.notify();
   }
