@@ -27,13 +27,13 @@ export class TodoRenderer {
     const pendingHtml = this.renderPendingRows(service);
     const completedHtml = this.renderCompletedRows(service);
 
-    let oldestPendingLabel = 'none';
+    let oldestPendingTask;
     for (const task of service.tasks) {
-      if (!task.completed) {
-        oldestPendingLabel = task.desc;
-        break;
+      if (!task.completed && (!oldestPendingTask || task.id < oldestPendingTask.id)) {
+        oldestPendingTask = task;
       }
     }
+    const oldestPendingLabel = oldestPendingTask?.desc ?? 'none';
 
     this.container.innerHTML =
       `<p class="status">${service.getWorkloadSummary()} - oldest: ${oldestPendingLabel}</p>` +

@@ -92,7 +92,7 @@ test('Undo removes three successful adds newest first through the confirmation p
   assert.equal(history.done.length, 0);
 });
 
-test('main wires startup counts, Add, Enter, Undo and the existing urgent/suggestion buttons', async t => {
+test('main wires startup counts and the task and sorting controls', async t => {
   const originals = {
     document: globalThis.document,
     localStorage: globalThis.localStorage,
@@ -105,7 +105,7 @@ test('main wires startup counts, Add, Enter, Undo and the existing urgent/sugges
   t.mock.method(Date, 'now', () => nextId++);
   const elements = new Map();
   for (const id of ['task-input', 'add-task-btn', 'add-urgent-btn', 'suggest-btn',
-    'undo-btn', 'task-counter', 'task-container']) {
+    'undo-btn', 'sort-name-btn', 'sort-newest-btn', 'task-counter', 'task-container']) {
     elements.set(id, {
       value: '', textContent: '', innerHTML: '', listeners: {},
       addEventListener(event, listener) { this.listeners[event] = listener; },
@@ -146,4 +146,15 @@ test('main wires startup counts, Add, Enter, Undo and the existing urgent/sugges
   assert.equal(tasks[1].priority, 'high');
   assert.ok(elements.get('task-container').innerHTML.includes('Previously saved task'));
   assert.equal(document.title, 'Todo (2)');
+
+  const container = elements.get('task-container');
+  elements.get('sort-name-btn').click();
+  input.value = 'Z new task';
+  elements.get('add-task-btn').click();
+  input.value = 'A new task';
+  elements.get('add-task-btn').click();
+  assert.match(container.innerHTML, /A new task<\/span>[\s\S]*Z new task<\/span>/);
+  elements.get('sort-newest-btn').click();
+  assert.match(container.innerHTML, /<ul>\s*<li[^>]*>\s*<span[^>]*>A new task<\/span>/);
+  assert.match(container.innerHTML, /oldest: \[URGENT\] Urgent task/);
 });
