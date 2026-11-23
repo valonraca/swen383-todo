@@ -1,4 +1,5 @@
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 export class TodoService {
   constructor(storageHandler) {
@@ -60,7 +61,7 @@ export class TodoService {
   toggleComplete(id) {
     const task = this.tasks.find(item => item.id === id);
     if (!task) return;
-    task.completed = !task.completed;
+    stateOf(task).next(task);
     this.storageHandler.save(this.tasks);
     this.notify();
   }
