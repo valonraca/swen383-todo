@@ -84,4 +84,26 @@ export class TodoService {
 
     return `${done}/${this.tasks.length} done - ${urgent} urgent, ${normal} normal remaining`;
   }
+  // src/TodoService.js
+// 1. two new methods:
+setSortStrategy(strategy) {
+  this.sortStrategy = strategy;
+  this.applySort();
+  this.notify();
+}
+
+applySort() {
+  if (this.sortStrategy) {
+    this.sortStrategy.sort(this.tasks);
+  }
+}
+
+// 2. in store(), add one line:
+store(task) {
+  this.tasks.push(task);
+  this.applySort();                 // new
+  this.storage.save(this.tasks);
+  this.notify();
+  return task.id;
+}
 }
