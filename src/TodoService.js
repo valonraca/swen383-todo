@@ -82,10 +82,15 @@ export class TodoService {
     if (!task) return;
 
     stateOf(task).next(task);
+    this.applySort();
+    this.storage.save(this.tasks);
+    this.notify();
+  }
 
   deleteTask(id) {
     this.tasks = this.tasks.filter(t => t.id !== id);
     this.storage.save(this.tasks);
+    this.notify();
   }
 
   getWorkloadSummary() {
