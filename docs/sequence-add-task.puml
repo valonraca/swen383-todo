@@ -1,0 +1,36 @@
+@startuml AddTask
+
+actor User
+participant DOM
+participant TodoService
+participant LocalStorageHandler
+participant TodoRenderer
+
+User -> DOM : submit task description
+activate DOM
+DOM -> TodoService : addTask(description, type)
+activate TodoService
+
+TodoService -> TodoService : validate description
+TodoService -> TodoService : create task record
+TodoService -> TodoService : remember current state
+TodoService -> TodoService : add task to tasks
+
+TodoService -> LocalStorageHandler : save(tasks)
+activate LocalStorageHandler
+LocalStorageHandler --> TodoService : ok
+deactivate LocalStorageHandler
+
+TodoService --> DOM : task
+deactivate TodoService
+
+DOM -> TodoRenderer : render(task.id)
+activate TodoRenderer
+TodoRenderer -> TodoRenderer : rebuild pending and completed lists
+TodoRenderer --> DOM : re-render
+deactivate TodoRenderer
+
+DOM --> User : show new pending task
+deactivate DOM
+
+@enduml

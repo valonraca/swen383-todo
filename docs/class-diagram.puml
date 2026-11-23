@@ -1,0 +1,52 @@
+@startuml ClassDiagram
+
+class TodoManager {
+  - tasks: Task[]
+  - history: Task[][]
+  - container: HTMLElement
+  + addTask(description: String, type: String)
+  + toggleComplete(id: String)
+  + deleteTask(id: String)
+  + undo(): boolean
+  + render(justAddedId: String)
+}
+
+class TodoService {
+  - storage: LocalStorageHandler
+  - tasks: Task[]
+  - history: Task[][]
+  + addTask(description: String, type: String)
+  + toggleComplete(id: String)
+  + deleteTask(id: String)
+  + undo(): boolean
+  + canUndo(): boolean
+}
+
+class TodoRenderer {
+  - container: HTMLElement
+  - service: TodoService
+  + render(justAddedId: String)
+  + renderPendingRows(): String
+  + renderCompletedRows(): String
+}
+
+class LocalStorageHandler {
+  - key: String
+  + load(): Task[]
+  + save(tasks: Task[])
+}
+
+class Task {
+  - id: String
+  - desc: String
+  - completed: boolean
+  - priority: String
+  - createdAt: String
+}
+
+TodoManager *-- "0..*" Task : owns
+TodoService *-- "0..*" Task : owns
+TodoService o-- LocalStorageHandler : uses
+TodoRenderer --> TodoService : reads and updates
+
+@enduml
