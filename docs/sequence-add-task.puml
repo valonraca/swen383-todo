@@ -1,0 +1,71 @@
+@startuml SequenceAddTask
+title Week 6 Add a Task Through the Builder
+actor User
+participant "Input and add buttons" as UI
+participant "main.js" as Main
+participant TodoController as Controller
+participant TodoService as Service
+participant TaskBuilder as Builder
+participant Task
+participant LocalStorageHandler as Storage
+participant "Browser localStorage" as BrowserStorage
+participant TodoRenderer as Renderer
+participant "Task container and document" as Page
+
+User -> UI : Enter description and choose an action
+alt Add Task or Enter
+  UI -> Main : normal click handler
+  Main -> Controller : addTask(input.value)
+  Controller -> Service : addTask(description)
+else Add Urgent
+  UI -> Main : urgent click handler
+  Main -> Controller : addUrgentTask(input.value)
+  Controller -> Service : addUrgentTask(description)
+end
+Service -> Service : validate(description)
+
+alt Trimmed description has fewer than 3 characters
+  Service -> User : alert validation message
+  Service --> Controller : null
+  Controller --> Main : null
+  note over Main, Page : Input and rendered lists remain unchanged
+else Valid description
+  note right of Service
+    validate() returns trimmed text and warns
+    if the existing list has at least 20 tasks.
+  end note
+  Service -> Builder : new TaskBuilder(trimmed)
+  opt addUrgentTask() construction
+    Service -> Builder : setPriority('high')
+    Builder --> Service : this
+    Service -> Builder : addLabel('URGENT')
+    Builder --> Service : this
+  end
+  Service -> Builder : build()
+  Builder -> Task : new Task(this)
+  Task --> Builder : task
+  Builder --> Service : task
+  note over Service, Builder
+    Separate service methods select these construction steps;
+    the opt does not represent a task-type conditional in the code.
+  end note
+  Service -> Service : store(task): append to tasks
+  Service -> Storage : save(tasks)
+  Storage -> BrowserStorage : setItem('todo-tasks', JSON.stringify(tasks))
+  Service --> Controller : task.id
+  Controller -> Renderer : render(service, task.id)
+  Renderer -> Service : getWorkloadSummary()
+  Service --> Renderer : workload text
+  Renderer -> Renderer : Read tasks and build both lists
+  Renderer -> Page : Update lists, status, and page title
+  Renderer -> Page : Bind actions and flash new row
+  Controller --> Main : task.id
+  Main -> UI : Clear input
+end
+
+note over UI, Main : Enter triggers the normal Add Task button.
+note over Service, Storage
+  StorageFactory.createService() supplied this service's backend at startup.
+  With InMemoryStorageFactory, save() updates its array instead of localStorage.
+end note
+@enduml

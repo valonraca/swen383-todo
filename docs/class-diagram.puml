@@ -1,0 +1,123 @@
+@startuml ClassDiagram
+title Week 6 Todo App Factory Method and Builder
+allowmixing
+skinparam classAttributeIconSize 0
+
+abstract class StorageHandler <<Product>> {
+  + load(): Task[]
+  + save(tasks)
+}
+
+class LocalStorageHandler <<ConcreteProduct>> {
+  + load(): Task[]
+  + save(tasks)
+}
+
+class InMemoryStorageHandler <<ConcreteProduct>> {
+  + tasks: Task[]
+  + load(): Task[]
+  + save(tasks)
+}
+
+abstract class StorageFactory <<Creator>> {
+  + createService(): TodoService
+  + createStorage(): StorageHandler
+}
+
+class LocalStorageFactory <<ConcreteCreator>> {
+  + createStorage(): LocalStorageHandler
+}
+
+class InMemoryStorageFactory <<ConcreteCreator>> {
+  + createStorage(): InMemoryStorageHandler
+}
+
+class Task <<Product>> {
+  + id: Number
+  + desc: String
+  + completed: Boolean
+  + priority: String
+  + createdAt: String
+  + Task(builder)
+}
+
+class TaskBuilder <<Builder>> {
+  + desc: String
+  + priority: String
+  + TaskBuilder(desc)
+  + setPriority(priority): TaskBuilder
+  + addLabel(label): TaskBuilder
+  + build(): Task
+}
+
+class TodoService {
+  + tasks: Task[]
+  + storageHandler: StorageHandler
+  + TodoService(storageHandler)
+  + addTask(description): Number or null
+  + addUrgentTask(description): Number or null
+  + validate(description): String or null
+  + store(task): Number
+  + toggleComplete(id)
+  + deleteTask(id)
+  + getWorkloadSummary(): String
+}
+
+class TodoRenderer {
+  + container: HTMLElement
+  + actions: Object
+  + TodoRenderer(containerId)
+  + bindActions(actions)
+  + renderPendingRows(service): String
+  + renderCompletedRows(service): String
+  + buildTaskRow(task): String
+  + render(service, justAddedId)
+}
+
+class TodoController {
+  + todoService: TodoService
+  + todoRenderer: TodoRenderer
+  + TodoController(todoService, todoRenderer)
+  + start()
+  + addTask(description): Number or null
+  + addUrgentTask(description): Number or null
+  + toggleTask(id)
+  + deleteTask(id)
+}
+
+artifact "main.js" as Main
+StorageHandler <|-- LocalStorageHandler
+StorageHandler <|-- InMemoryStorageHandler
+StorageFactory <|-- LocalStorageFactory
+StorageFactory <|-- InMemoryStorageFactory
+StorageFactory ..> StorageHandler : createStorage() contract
+StorageFactory ..> TodoService : creates and injects storage
+LocalStorageFactory ..> LocalStorageHandler : creates
+InMemoryStorageFactory ..> InMemoryStorageHandler : creates
+Main ..> LocalStorageFactory : selects default factory
+Main ..> TodoRenderer : creates
+Main ..> TodoController : creates and delegates input
+TodoService --> StorageHandler : injected persistence
+TodoService ..> TaskBuilder : assembles new tasks
+TaskBuilder ..> Task : build() creates
+TodoService --> Task : owns task data
+TodoController --> TodoService : delegates task operations
+TodoController --> TodoRenderer : binds actions and renders
+TodoRenderer ..> TodoService : reads tasks and workload
+
+note bottom of StorageFactory
+  createService() calls this.createStorage().
+  Base createStorage() throws until overridden.
+end note
+
+note bottom of StorageHandler
+  Base load() and save() throw until overridden.
+  Loaded JSON records retain the Task fields;
+  they need not be Task instances.
+end note
+
+note right of TaskBuilder
+  Normal: build() with default normal priority.
+  Urgent: setPriority('high'), addLabel('URGENT'), build().
+end note
+@enduml
