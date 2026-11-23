@@ -1,4 +1,5 @@
 import { TaskBuilder } from './TaskBuilder.js';
+import { stateOf } from './TaskState.js';
 
 // Owns task data and task rules; persistence is supplied by the caller.
 export class TodoService {
@@ -80,9 +81,7 @@ export class TodoService {
     const task = this.tasks.find(t => t.id === id);
     if (!task) return;
 
-    task.completed = !task.completed;
-    this.storage.save(this.tasks);
-  }
+    stateOf(task).next(task);
 
   deleteTask(id) {
     this.tasks = this.tasks.filter(t => t.id !== id);
