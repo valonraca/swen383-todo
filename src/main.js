@@ -7,6 +7,7 @@ import { LoggingTodoServiceDecorator } from './LoggingTodoServiceDecorator.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TaskCounter } from './TaskObservers.js';
 import { AddTaskCommand, CommandHistory } from './Commands.js';
+import { SortByName, SortByNewest } from './SortStrategy.js';
 
 const factory = new ArchivingStorageFactory();
 const todoService = factory.createService();
@@ -57,3 +58,13 @@ input.addEventListener('keydown', (event) => {
 const counter = new TaskCounter();
 todoService.subscribe(counter);
 counter.update(todoService.tasks);
+
+document.getElementById('sort-name-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByName());
+  controller.start();
+});
+
+document.getElementById('sort-newest-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByNewest());
+  controller.start();
+});
