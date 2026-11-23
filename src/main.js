@@ -1,4 +1,5 @@
 // src/main.js
+import { SortByName, SortByNewest } from './SortStrategy.js';
 import { ConfirmDeleteProxy } from './ConfirmDeleteProxy.js';
 import { TodoRenderer } from './TodoRenderer.js';
 import { TodoController } from './TodoController.js';
@@ -56,3 +57,12 @@ suggestBtn.addEventListener('click', () => {
 const counter = new TaskCounter();
 todoService.subscribe(counter);
 counter.update(todoService.tasks);
+
+document.getElementById('sort-name-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByName());
+  controller.start();               // draw the list again
+});
+document.getElementById('sort-newest-btn').addEventListener('click', () => {
+  todoService.setSortStrategy(new SortByNewest());
+  controller.start();
+});
